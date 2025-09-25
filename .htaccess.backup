@@ -1,0 +1,34 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /crm/
+
+    # Redirect Trailing Slashes If Not A Folder
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)/$ $1 [L,R=301]
+
+    # Send requests that are not real files or directories to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond $1 !^(index\.php|images|robots\.txt|assets)
+    RewriteRule ^(.*)$ index.php/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Fallback: Allow index.php based routing when mod_rewrite is unavailable
+    ErrorDocument 404 /crm/index.php
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Deny access to sensitive files
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+

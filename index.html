@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoice Admin Panel | AdminLTE HTML</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Bootstrap 4.6.2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" xintegrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- AdminLTE.min.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
+    <style>
+        /* Custom styles to ensure full height and better spacing */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        .wrapper {
+            min-height: 100vh; /* Ensure wrapper takes full viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            flex-grow: 1; /* Allow content to grow and fill available space */
+            padding-top: 1rem; /* Adjust padding for content */
+        }
+        .info-box-text {
+            white-space: nowrap; /* Prevent text wrapping for info box titles */
+        }
+        .invoice-content-container {
+            max-width: 800px;
+            margin: auto;
+            border: 1px solid #dee2e6;
+            border-radius: .25rem;
+        }
+        .invoice-table th, .invoice-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .invoice-table thead th {
+            background-color: #f3f4f6;
+        }
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .content-wrapper, .content-wrapper * {
+                visibility: visible;
+            }
+            .content-wrapper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+            }
+            .main-header, .main-sidebar, .control-sidebar, .main-footer, .no-print {
+                display: none !important;
+            }
+            .invoice-content-container {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-none d-sm-inline-block">
+                    <span class="nav-link" id="loggedInUserDisplay">Logged in as: N/A (Role)</span>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-danger btn-sm m-1" id="logoutButton">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="#" class="brand-link">
+                <span class="brand-text font-weight-light">Invoice Admin</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="sidebarUserName">Alexander Pierce</a>
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item user-management-nav" style="display:none;">
+                            <a href="#userManagement" class="nav-link" data-page="userManagement">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>User Management</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#buyerManagement" class="nav-link" data-page="buyerManagement">
+                                <i class="nav-icon fas fa-shopping-cart"></i>
+                                <p>Buyer Management</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#categoryManagement" class="nav-link" data-page="categoryManagement">
+                                <i class="nav-icon fas fa-layer-group"></i>
+                                <p>Category Management</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#productManagement" class="nav-link" data-page="productManagement">
+                                <i class="nav-icon fas fa-box"></i>
+                                <p>Product/Service Management</p>
+                            </a>
+                        </li>
+                        <li class="nav-item company-profile-nav" style="display:none;">
+                            <a href="#companyProfile" class="nav-link" data-page="companyProfile">
+                                <i class="nav-icon fas fa-building"></i>
+                                <p>Company Profile</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#invoiceManagement" class="nav-link" data-page="invoiceManagement">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>Invoice Management</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+            </div>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 text-dark" id="pageTitle">Dashboard</h1>
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.container-fluid -->
+            </div>
+            <!-- /.content-header -->
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid" id="appContent">
+                    <!-- Dynamic content will be loaded here -->
+
+                    <!-- Dashboard Content -->
+                    <div id="dashboardPage" class="page-content">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Sales</span>
+                                        <span class="info-box-number" id="dashboardTotalSales"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-file-invoice"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Invoices</span>
+                                        <span class="info-box-number" id="dashboardTotalInvoices"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Paid Invoices</span>
+                                        <span class="info-box-number" id="dashboardPaidInvoices"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <div class="info-box bg-danger">
+                                    <span class="info-box-icon"><i class="fas fa-exclamation-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Due Invoices</span>
+                                        <span class="info-box-number" id="dashboardDueInvoices"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-lg-6">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-header">
+                                        <h5 class="card-title">Sales by Month</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart">
+                                            <canvas id="salesChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-info card-outline">
+                                    <div class="card-header">
+                                        <h5 class="card-title">Invoice Status Distribution</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart">
+                                            <canvas id="statusChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Recent Invoices</h3>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <table class="table table-striped table-valign-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Invoice #</th>
+                                                    <th>Buyer</th>
+                                                    <th>Date</th>
+                                                    <th>Total</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dashboardRecentInvoicesBody">
+                                                <!-- Recent invoices will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Management Content -->
+                    <div id="userManagementPage" class="page-content" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Manage Users (Dummy Data)</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-primary btn-sm" id="addUserButton">
+                                        <i class="fas fa-plus mr-1"></i> Add New User
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="userFormContainer" style="display: none;"></div>
+                                <div id="userTableContainer">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>User ID</th>
+                                                <th style="width: 150px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="userTableBody">
+                                            <!-- Users will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buyer Management Content -->
+                    <div id="buyerManagementPage" class="page-content" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Manage Buyers (Dummy Data)</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-primary btn-sm" id="addBuyerButton">
+                                        <i class="fas fa-plus mr-1"></i> Add New Buyer
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="buyerFormContainer" style="display: none;"></div>
+                                <div id="buyerTableContainer">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Address</th>
+                                                <th>Contact</th>
+                                                <th>GSTIN</th>
+                                                <th style="width: 150px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="buyerTableBody">
+                                            <!-- Buyers will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Management Content -->
+                    <div id="categoryManagementPage" class="page-content" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Add New Category</h3>
+                                    </div>
+                                    <form id="addCategoryForm">
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label for="newCategoryName">Category Name</label>
+                                                <input type="text" class="form-control" id="newCategoryName" placeholder="Enter category name" required>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-plus mr-1"></i> Add Category
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Categories List (Dummy Data)</h3>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category Name</th>
+                                                    <th style="width: 100px;">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="categoryTableBody">
+                                                <!-- Categories will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product/Service Management Content -->
+                    <div id="productManagementPage" class="page-content" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Manage Products/Services (Dummy Data)</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-primary btn-sm" id="addProductButton">
+                                        <i class="fas fa-plus mr-1"></i> Add New Product
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="productFormContainer" style="display: none;"></div>
+                                <div id="productTableContainer">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Description</th>
+                                                <th>Category</th>
+                                                <th>Price</th>
+                                                <th style="width: 150px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productTableBody">
+                                            <!-- Products will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Profile Management Content -->
+                    <div id="companyProfilePage" class="page-content" style="display: none;">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Company Profile (Dummy Data)</h3>
+                            </div>
+                            <form id="companyProfileForm">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="companyProfileName">Company Name</label>
+                                        <input type="text" class="form-control" id="companyProfileName" placeholder="Enter company name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="companyProfileAddress">Address</label>
+                                        <textarea class="form-control" id="companyProfileAddress" rows="3" placeholder="Enter company address" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="companyProfileLogoUrl">Company Logo URL (Optional)</label>
+                                        <input type="url" class="form-control" id="companyProfileLogoUrl" placeholder="e.g., https://example.com/logo.png">
+                                        <div class="mt-2 text-center" id="companyLogoPreviewContainer" style="display: none;">
+                                            <img id="companyLogoPreview" src="" alt="Company Logo Preview" class="img-thumbnail" style="max-height: 100px;">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <h5>Bank Details</h5>
+                                    <div class="form-group">
+                                        <label for="bankName">Bank Name</label>
+                                        <input type="text" class="form-control" id="bankName" placeholder="Bank Name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="accountNumber">Account Number</l>
+                                        <input type="text" class="form-control" id="accountNumber" placeholder="Account Number">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ifscCode">IFSC Code</label>
+                                        <input type="text" class="form-control" id="ifscCode" placeholder="IFSC Code">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="companyProfileTerms">Terms & Conditions</label>
+                                        <textarea class="form-control" id="companyProfileTerms" rows="5" placeholder="Enter terms and conditions"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="companyProfilePlaceOfSupply">Place of Supply</label>
+                                        <input type="text" class="form-control" id="companyProfilePlaceOfSupply" placeholder="Place of Supply">
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="submit" class="btn btn-primary float-right">Save Profile</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Management Content -->
+                    <div id="invoiceManagementPage" class="page-content" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Manage Invoices (Dummy Data)</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-primary btn-sm" id="createInvoiceButton">
+                                        <i class="fas fa-plus mr-1"></i> Create New Invoice
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Search by invoice number or buyer name..." id="invoiceSearchInput">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-control" id="invoiceStatusFilter">
+                                            <option value="all">All Statuses</option>
+                                            <option value="draft">Draft</option>
+                                            <option value="sent">Sent</option>
+                                            <option value="paid">Paid</option>
+                                            <option value="due">Due</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Invoice #</th>
+                                                <th>Buyer</th>
+                                                <th>Date</th>
+                                                <th>Due Date</th>
+                                                <th>Total Amount</th>
+                                                <th>Status</th>
+                                                <th style="width: 180px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="invoiceTableBody">
+                                            <!-- Invoices will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Form Content (for Create/Edit) -->
+                    <div id="invoiceFormPage" class="page-content" style="display: none;">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title" id="invoiceFormTitle">Create New Invoice (Dummy Data)</h3>
+                            </div>
+                            <form id="invoiceForm" class="form-horizontal">
+                                <input type="hidden" id="invoiceIdInput">
+                                <div class="card-body">
+                                    <div class="form-group row">
+                                        <label for="invoiceFormNumber" class="col-sm-3 col-form-label">Invoice Number</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="invoiceFormNumber" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="invoiceFormDate" class="col-sm-3 col-form-label">Invoice Date</label>
+                                        <div class="col-sm-9">
+                                            <input type="date" class="form-control" id="invoiceFormDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="invoiceFormDueDate" class="col-sm-3 col-form-label">Due Date</label>
+                                        <div class="col-sm-9">
+                                            <input type="date" class="form-control" id="invoiceFormDueDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="invoiceFormBuyer" class="col-sm-3 col-form-label">Select Buyer</label>
+                                        <div class="col-sm-9">
+                                            <select id="invoiceFormBuyer" class="form-control" required>
+                                                <option value="">-- Select a Buyer --</option>
+                                                <!-- Buyers will be loaded here -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="invoiceFormStatus" class="col-sm-3 col-form-label">Status</label>
+                                        <div class="col-sm-9">
+                                            <select id="invoiceFormStatus" class="form-control">
+                                                <option value="draft">Draft</option>
+                                                <option value="sent">Sent</option>
+                                                <option value="paid">Paid</option>
+                                                <option value="due">Due</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <h4 class="mt-4 mb-3">Invoice Items</h4>
+                                    <div id="invoiceItemsContainer">
+                                        <!-- Invoice items will be loaded here -->
+                                    </div>
+                                    <button type="button" class="btn btn-success btn-sm mb-4" id="addInvoiceItemButton">
+                                        <i class="fas fa-plus mr-1"></i> Add Item
+                                    </button>
+
+                                    <div class="row justify-content-end">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <th>Sub Total:</th>
+                                                        <td class="text-right" id="invoiceFormSubTotal"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Tax (18%):</th>
+                                                        <td class="text-right" id="invoiceFormTaxAmount"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Total Amount:</th>
+                                                        <td class="text-right"><strong id="invoiceFormTotalAmount"></strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <h4 class="mt-4 mb-3">Additional Details</h4>
+                                    <div class="form-group row">
+                                        <label for="invoiceFormTerms" class="col-sm-3 col-form-label">Terms & Conditions</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" id="invoiceFormTerms" rows="4" placeholder="Enter terms and conditions"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label">Bank Details</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control mb-2" id="invoiceFormBankName" placeholder="Bank Name">
+                                            <input type="text" class="form-control mb-2" id="invoiceFormAccountNumber" placeholder="Account Number">
+                                            <input type="text" class="form-control" id="invoiceFormIfscCode" placeholder="IFSC Code">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-default" id="cancelInvoiceFormButton">Cancel</button>
+                                    <button type="submit" class="btn btn-info float-right" id="saveInvoiceButton">Save Invoice</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Preview Content -->
+                    <div id="invoicePreviewPage" class="page-content" style="display: none;">
+                        <div class="card">
+                            <div class="card-header no-print">
+                                <h3 class="card-title" id="invoicePreviewTitle">Invoice Details:</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-secondary btn-sm mr-1" id="invoicePreviewBackButton">
+                                        <i class="fas fa-arrow-left mr-1"></i> Back
+                                    </button>
+                                    <button class="btn btn-primary btn-sm mr-1" id="invoicePreviewSendEmail">
+                                        <i class="fas fa-envelope mr-1"></i> Send via Email
+                                    </button>
+                                    <button class="btn btn-success btn-sm mr-1" id="invoicePreviewDownloadPdf">
+                                        <i class="fas fa-download mr-1"></i> Download PDF
+                                    </button>
+                                    <button class="btn btn-info btn-sm" id="invoicePreviewPrint">
+                                        <i class="fas fa-print mr-1"></i> Print
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="invoice-content" class="invoice p-3 mb-3 invoice-content-container">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h4>
+                                                <span id="previewCompanyLogo"></span>
+                                                <i class="fas fa-globe" id="previewCompanyGlobeIcon" style="display:none;"></i> <span id="previewCompanyName"></span>
+                                                <small class="float-right">Date: <span id="previewInvoiceDate"></span></small>
+                                            </h4>
+                                        </div>
+                                    </div>
+
+                                    <div class="row invoice-info">
+                                        <div class="col-sm-4 invoice-col">
+                                            From
+                                            <address>
+                                                <strong><span id="previewCompanyAddressName"></span></strong><br>
+                                                <span id="previewCompanyAddress"></span>
+                                                Place of Supply: <span id="previewCompanyPlaceOfSupply"></span>
+                                            </address>
+                                        </div>
+                                        <div class="col-sm-4 invoice-col">
+                                            To
+                                            <address>
+                                                <strong><span id="previewBuyerName"></span></strong><br>
+                                                <span id="previewBuyerAddress"></span>
+                                                Phone: <span id="previewBuyerContact"></span><br>
+                                                GSTIN: <span id="previewBuyerGstin"></span>
+                                            </address>
+                                        </div>
+                                        <div class="col-sm-4 invoice-col">
+                                            <b>Invoice #<span id="previewInvoiceNumber"></span></b><br>
+                                            <br>
+                                            <b>Order ID:</b> N/A<br>
+                                            <b>Payment Due:</b> <span id="previewDueDate"></span><br>
+                                            <b>Status:</b> <span id="previewStatusBadge" class="badge"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12 table-responsive">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Qty</th>
+                                                        <th>Product</th>
+                                                        <th>Description</th>
+                                                        <th>Unit Price</th>
+                                                        <th>Subtotal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="previewInvoiceItemsBody">
+                                                    <!-- Invoice items for preview will be loaded here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p class="lead">Bank Details:</p>
+                                            <p class="text-muted well well-sm shadow-none" style="margin-top: 10px;">
+                                                Bank Name: <span id="previewBankName"></span><br>
+                                                Account No: <span id="previewAccountNumber"></span><br>
+                                                IFSC Code: <span id="previewIfscCode"></span>
+                                            </p>
+                                            <p class="lead">Terms & Conditions:</p>
+                                            <p class="text-muted well well-sm shadow-none" style="margin-top: 10px; white-space: pre-wrap;" id="previewTermsAndConditions"></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="lead">Amount Due <span id="previewAmountDueDate"></span></p>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th style="width:50%">Subtotal:</th>
+                                                            <td id="previewSubTotal"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Tax (18%):</th>
+                                                            <td id="previewTaxAmount"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Total:</th>
+                                                            <td id="previewTotalAmount"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12 text-center text-muted">
+                                            <small>Generated by: <span id="previewGeneratedByEmail"></span> (User ID: <span id="previewGeneratedByUid"></span>)</small>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 text-center text-muted mt-2">
+                                            <small>Thank you for your business!</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.container-fluid -->
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2023-2024 <a href="https://adminlte.io">Invoice Admin</a>.</strong>
+            All rights reserved.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 1.0.0 (Dummy Data)
+            </div>
+        </footer>
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- Modal Placeholder -->
+    <div class="modal fade" id="appModal" tabindex="-1" role="dialog" aria-labelledby="appModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="appModalBody"></div>
+                <div class="modal-footer" id="appModalFooter">
+                    <!-- Buttons will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUIRED SCRIPTS -->
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap 4.6.2 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <!-- jsPDF and html2canvas for PDF generation (optional, if you want client-side PDF generation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Dummy Data Store
+        let dummyUsers = [
+            { id: 'user1', email: 'admin@example.com', password: 'password123', role: 'superadmin' },
+            { id: 'user2', email: 'editor@example.com', password: 'password123', role: 'admin' },
+        ];
+
+        let dummyBuyers = [
+            { id: 'buyer1', name: 'Acme Corp', address: '123 Business Rd, Suite 400, City, State, 12345', contact: 'john.doe@acmecorp.com', gstin: 'ABCDE1234F5G6H7' },
+            { id: 'buyer2', name: 'Beta Innovations', address: '456 Tech Lane, Bldg B, Town, State, 67890', contact: 'jane.smith@betainnov.com', gstin: '' },
+            { id: 'buyer3', name: 'Global Solutions', address: '789 Market St, Apt 10, Metro, State, 10112', contact: 'info@globalsolutions.net', gstin: 'GHIJK7890L1M2N3' },
+        ];
+
+        let dummyCategories = [
+            { id: 'cat1', name: 'Software Licenses' },
+            { id: 'cat2', name: 'Consulting Services' },
+            { id: 'cat3', name: 'Hardware' },
+        ];
+
+        let dummyProducts = [
+            { id: 'prod1', name: 'Enterprise CRM Suite', description: 'Annual license for CRM software', price: 12000.00, categoryId: 'cat1' },
+            { id: 'prod2', name: 'Cloud Migration Service', description: 'Migration services for cloud infrastructure', price: 5000.00, categoryId: 'cat2' },
+            { id: 'prod3', name: 'Data Analytics Workshop', description: '2-day workshop on advanced data analytics', price: 1500.00, categoryId: 'cat2' },
+            { id: 'prod4', name: 'Laptop Pro X', description: 'High-performance laptop for professionals', price: 95000.00, categoryId: 'cat3' },
+        ];
+
+        let dummyCompanyProfile = {
+            name: 'Innovate Solutions Inc.',
+            address: 'Unit 5, Tech Park, Silicon Valley, CA 94043, USA',
+            logoUrl: 'https://placehold.co/150x80/6366f1/ffffff?text=Your+Logo',
+            bankDetails: {
+                bankName: 'First Digital Bank',
+                accountNumber: '1234567890',
+                ifscCode: 'FDBI0001234',
+            },
+            termsAndConditions: '1. Payment is due within 30 days from the invoice date. 2. Late payments will incur a penalty of 1.5% per month. 3. All disputes are subject to arbitration in California. 4. Prices are exclusive of applicable taxes unless otherwise stated. 5. No refunds after 7 days of service completion.',
+            placeOfSupply: 'California, USA',
+        };
+
+        let invoiceCounter = 1000;
+        const generateDummyInvoiceNumber = () => {
+            invoiceCounter += 1;
+            return `INV-${String(invoiceCounter).padStart(5, '0')}`;
+        };
+
+        const calculateDummyInvoiceTotals = (items) => {
+            let subTotal = 0;
+            items.forEach(item => {
+                const product = dummyProducts.find(p => p.id === item.productId);
+                const itemPrice = item.price || (product ? product.price : 0);
+                subTotal += (itemPrice * (item.quantity || 0));
+            });
+            const taxRate = 0.18;
+            const taxAmount = subTotal * taxRate;
+            const totalAmount = subTotal + taxAmount;
+            return { subTotal, taxAmount, totalAmount };
+        };
+
+        let dummyInvoices = [];
+        if (dummyInvoices.length === 0) {
+            const defaultInvoiceItems1 = [
+                { productId: 'prod1', quantity: 1, price: dummyProducts.find(p => p.id === 'prod1').price },
+                { productId: 'prod3', quantity: 2, price: dummyProducts.find(p => p.id === 'prod3').price },
+            ];
+            const totals1 = calculateDummyInvoiceTotals(defaultInvoiceItems1);
+
+            const defaultInvoiceItems2 = [
+                { productId: 'prod2', quantity: 1, price: dummyProducts.find(p => p.id === 'prod2').price },
+            ];
+            const totals2 = calculateDummyInvoiceTotals(defaultInvoiceItems2);
+
+            const defaultInvoiceItems3 = [
+                { productId: 'prod4', quantity: 1, price: dummyProducts.find(p => p.id === 'prod4').price },
+            ];
+            const totals3 = calculateDummyInvoiceTotals(defaultInvoiceItems3);
+
+            dummyInvoices = [
+                {
+                    id: 'inv1',
+                    invoiceNumber: 'INV-00001',
+                    invoiceDate: new Date(2023, 0, 15),
+                    dueDate: new Date(2023, 1, 15),
+                    buyerId: 'buyer1',
+                    companyId: 'main_company',
+                    items: defaultInvoiceItems1,
+                    subTotal: totals1.subTotal,
+                    taxAmount: totals1.taxAmount,
+                    totalAmount: totals1.totalAmount,
+                    status: 'paid',
+                    termsAndConditions: dummyCompanyProfile.termsAndConditions,
+                    bankDetails: dummyCompanyProfile.bankDetails,
+                },
+                {
+                    id: 'inv2',
+                    invoiceNumber: 'INV-00002',
+                    invoiceDate: new Date(2023, 1, 20),
+                    dueDate: new Date(2023, 2, 20),
+                    buyerId: 'buyer2',
+                    companyId: 'main_company',
+                    items: defaultInvoiceItems2,
+                    subTotal: totals2.subTotal,
+                    taxAmount: totals2.taxAmount,
+                    totalAmount: totals2.totalAmount,
+                    status: 'due',
+                    termsAndConditions: dummyCompanyProfile.termsAndConditions,
+                    bankDetails: dummyCompanyProfile.bankDetails,
+                },
+                {
+                    id: 'inv3',
+                    invoiceNumber: 'INV-00003',
+                    invoiceDate: new Date(2023, 2, 10),
+                    dueDate: new Date(2023, 3, 10),
+                    buyerId: 'buyer1',
+                    companyId: 'main_company',
+                    items: defaultInvoiceItems3,
+                    subTotal: totals3.subTotal,
+                    taxAmount: totals3.taxAmount,
+                    totalAmount: totals3.totalAmount,
+                    status: 'sent',
+                    termsAndConditions: dummyCompanyProfile.termsAndConditions,
+                    bankDetails: dummyCompanyProfile.bankDetails,
+                },
+                {
+                    id: 'inv4',
+                    invoiceNumber: 'INV-00004',
+                    invoiceDate: new Date(2023, 3, 5),
+                    dueDate: new Date(2023, 4, 5),
+                    buyerId: 'buyer3',
+                    companyId: 'main_company',
+                    items: [{ productId: 'prod1', quantity: 2, price: dummyProducts.find(p => p.id === 'prod1').price }],
+                    subTotal: 24000.00,
+                    taxAmount: 4320.00,
+                    totalAmount: 28320.00,
+                    status: 'draft',
+                    termsAndConditions: dummyCompanyProfile.termsAndConditions,
+                    bankDetails: dummyCompanyProfile.bankDetails,
+                },
+            ];
+        }
+
+        // Global state variables for the current user and page
+        let currentUser = null;
+        let userRole = 'superadmin'; // For dummy data, hardcode superadmin
+        let currentPage = 'dashboard';
+        let currentEditInvoiceId = null; // To store the ID of the invoice being edited/viewed
+
+        // Utility Functions
+        const formatDate = (timestamp) => {
+            if (!timestamp) return '';
+            const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        };
+
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        };
+
+        // Modal / Alert / Confirmation handling
+        const showAlert = (title, message, isConfirm = false, onConfirm = null) => {
+            $('#appModalLabel').text(title);
+            $('#appModalBody').html(`<p>${message}</p>`);
+            const footer = $('#appModalFooter');
+            footer.empty();
+            if (isConfirm) {
+                footer.append(`
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="modalConfirmButton">Confirm</button>
+                `);
+                $('#modalConfirmButton').off('click').on('click', () => {
+                    if (onConfirm) onConfirm();
+                    $('#appModal').modal('hide');
+                });
+            } else {
+                footer.append(`<button type="button" class="btn btn-info" data-dismiss="modal">OK</button>`);
+            }
+            $('#appModal').modal('show');
+        };
+
+        const showConfirmation = (title, message, onConfirm) => {
+            showAlert(title, message, true, onConfirm);
+        };
+
+        // Page Navigation
+        const navigateTo = (pageId, params = {}) => {
+            // Hide all page content divs
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+
+            let targetPageElement = null;
+
+            // Handle page-specific data loading/rendering
+            switch (pageId) {
+                case 'createInvoice':
+                case 'editInvoice':
+                    targetPageElement = document.getElementById('invoiceFormPage');
+                    renderInvoiceForm(pageId === 'createInvoice' ? 'create' : 'edit', params.invoiceId);
+                    break;
+                case 'viewInvoice':
+                    targetPageElement = document.getElementById('invoicePreviewPage');
+                    currentEditInvoiceId = params.invoiceId; // Set this here
+                    renderInvoicePreview(params.invoiceId);
+                    break;
+                default:
+                    targetPageElement = document.getElementById(pageId + 'Page');
+                    if (pageId === 'dashboard') renderDashboard();
+                    else if (pageId === 'userManagement') renderUserManagement();
+                    else if (pageId === 'buyerManagement') renderBuyerManagement();
+                    else if (pageId === 'categoryManagement') renderCategoryManagement();
+                    else if (pageId === 'productManagement') renderProductManagement();
+                    else if (pageId === 'companyProfile') renderCompanyProfileManagement();
+                    else if (pageId === 'invoiceManagement') renderInvoiceManagement();
+            }
+
+            if (targetPageElement) {
+                targetPageElement.style.display = 'block';
+                currentPage = pageId;
+                updatePageTitle(pageId);
+                updateSidebarActiveLink(pageId);
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+                showAlert('Navigation Error', `The page "${pageId}" could not be found. ` + (pageId === 'createInvoice' || pageId === 'editInvoice' ? 'Perhaps there\'s an issue with invoiceFormPage.' : ''));
+            }
+        };
+
+        const updatePageTitle = (pageId) => {
+            let title = '';
+            switch (pageId) {
+                case 'dashboard': title = 'Dashboard'; break;
+                case 'userManagement': title = 'User Management'; break;
+                case 'buyerManagement': title = 'Buyer Management'; break;
+                case 'categoryManagement': title = 'Category Management'; break;
+                case 'productManagement': title = 'Product/Service Management'; break;
+                case 'companyProfile': title = 'Company Profile'; break;
+                case 'invoiceManagement': title = 'Invoice Management'; break;
+                case 'createInvoice': title = 'Create New Invoice'; break;
+                case 'editInvoice': title = 'Edit Invoice'; break;
+                case 'viewInvoice': title = 'Invoice Details'; break;
+                default: title = 'Admin Panel';
+            }
+            document.getElementById('pageTitle').innerText = title;
+        };
+
+        const updateSidebarActiveLink = (pageId) => {
+            document.querySelectorAll('.main-sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const activeLink = document.querySelector(`.main-sidebar .nav-link[data-page="${pageId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        };
+
+        // Authentication and User Management
+        const checkAuthAndRender = () => {
+            // Simulate initial login check
+            if (currentUser === null) {
+                renderLoginPage();
+            } else {
+                document.getElementById('loggedInUserDisplay').innerText = `Logged in as: ${currentUser.email} (${userRole})`;
+                document.getElementById('sidebarUserName').innerText = currentUser.email;
+
+                // Show/hide menu items based on role
+                if (userRole === 'superadmin') {
+                    $('.user-management-nav').show();
+                    $('.company-profile-nav').show();
+                } else {
+                    $('.user-management-nav').hide();
+                    $('.company-profile-nav').hide();
+                }
+                navigateTo('dashboard');
+            }
+        };
+
+        const renderLoginPage = () => {
+            // Hide main wrapper and show login page
+            document.querySelector('.wrapper').style.display = 'none';
+            $('body').addClass('login-page').removeClass('sidebar-mini'); // Apply login page styling
+
+            document.getElementById('appContent').innerHTML = `
+                <div class="login-box">
+                    <div class="login-logo">
+                        <a href="#"><b>Invoice</b>Admin</a>
+                    </div>
+                    <div class="card">
+                        <div class="card-body login-card-body">
+                            <p class="login-box-msg" id="loginMsg">Sign in to start your session</p>
+                            <form id="loginForm">
+                                <div class="input-group mb-3">
+                                    <input type="email" class="form-control" placeholder="Email" id="loginEmail" required value="admin@example.com">
+                                    <div class="input-group-append">
+                                        <div class="input-group-text">
+                                            <span class="fas fa-envelope"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <input type="password" class="form-control" placeholder="Password" id="loginPassword" required value="password123">
+                                    <div class="input-group-append">
+                                        <div class="input-group-text">
+                                            <span class="fas fa-lock"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <p class="mb-0 mt-3">
+                                <a href="#" id="toggleRegister">Register a new membership</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#loginForm').off('submit').on('submit', (e) => {
+                e.preventDefault();
+                const email = $('#loginEmail').val();
+                const password = $('#loginPassword').val();
+                const isLoginMode = $('#loginMsg').text() === 'Sign in to start your session';
+
+                if (isLoginMode) {
+                    const user = dummyUsers.find(u => u.email === email && u.password === password);
+                    if (user) {
+                        currentUser = { uid: user.id, email: user.email };
+                        userRole = user.role;
+                        showAlert('Success', 'Logged in successfully!');
+                        $('body').removeClass('login-page').addClass('sidebar-mini');
+                        document.querySelector('.wrapper').style.display = 'flex';
+                        checkAuthAndRender(); // Re-render main app with logged in user
+                    } else {
+                        showAlert('Authentication Failed', 'Invalid email or password.');
+                    }
+                } else {
+                    if (dummyUsers.some(u => u.email === email)) {
+                        showAlert('Registration Failed', 'User with this email already exists.');
+                    } else {
+                        const newId = `user${Date.now()}`;
+                        dummyUsers.push({ id: newId, email: email, password: password, role: 'admin' });
+                        showAlert('Success', 'Account created successfully! Please log in.');
+                        $('#loginMsg').text('Sign in to start your session');
+                        $('#toggleRegister').text('Register a new membership');
+                        $('#loginEmail').val('');
+                        $('#loginPassword').val('');
+                    }
+                }
+            });
+
+            $('#toggleRegister').off('click').on('click', (e) => {
+                e.preventDefault();
+                const currentText = $('#loginMsg').text();
+                if (currentText === 'Sign in to start your session') {
+                    $('#loginMsg').text('Register a new account');
+                    $('#toggleRegister').text('I already have a membership');
+                } else {
+                    $('#loginMsg').text('Sign in to start your session');
+                    $('#toggleRegister').text('Register a new membership');
+                }
+            });
+        };
+
+        $('#logoutButton').on('click', () => {
+            currentUser = null;
+            userRole = null;
+            showAlert('Logged Out', 'You have been successfully logged out from dummy session.', false, () => {
+                renderLoginPage();
+            });
+        });
+
+        // Dashboard Rendering
+        let salesChartInstance = null;
+        let statusChartInstance = null;
+
+        const renderDashboard = () => {
+            const totalSales = dummyInvoices.reduce((sum, invoice) => sum + (invoice.totalAmount || 0), 0);
+            const totalInvoices = dummyInvoices.length;
+            const paidInvoices = dummyInvoices.filter(inv => inv.status === 'paid').length;
+            const dueInvoices = dummyInvoices.filter(inv => inv.status === 'due' || inv.status === 'sent').length;
+
+            $('#dashboardTotalSales').text(formatCurrency(totalSales));
+            $('#dashboardTotalInvoices').text(totalInvoices);
+            $('#dashboardPaidInvoices').text(paidInvoices);
+            $('#dashboardDueInvoices').text(dueInvoices);
+
+            // Prepare data for Sales by Month chart
+            const monthlySales = {};
+            dummyInvoices.forEach(invoice => {
+                const invoiceMonth = new Date(invoice.invoiceDate).toLocaleString('en-US', { year: 'numeric', month: 'short' });
+                if (!monthlySales[invoiceMonth]) {
+                    monthlySales[invoiceMonth] = 0;
+                }
+                monthlySales[invoiceMonth] += invoice.totalAmount;
+            });
+
+            const salesLabels = Object.keys(monthlySales).sort((a, b) => new Date(a) - new Date(b));
+            const salesData = salesLabels.map(label => monthlySales[label]);
+
+            // Destroy existing chart instances if they exist
+            if (salesChartInstance) {
+                salesChartInstance.destroy();
+            }
+            if (statusChartInstance) {
+                statusChartInstance.destroy();
+            }
+
+            // Render Sales by Month Chart (Bar Chart)
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            salesChartInstance = new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Sales Amount',
+                        backgroundColor: 'rgba(60,141,188,0.9)', // AdminLTE info color
+                        borderColor: 'rgba(60,141,188,0.8)',
+                        data: salesData
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Prepare data for Invoice Status Distribution chart
+            const statusCounts = {
+                'draft': 0,
+                'sent': 0,
+                'paid': 0,
+                'due': 0
+            };
+            dummyInvoices.forEach(invoice => {
+                if (statusCounts.hasOwnProperty(invoice.status)) {
+                    statusCounts[invoice.status]++;
+                }
+            });
+
+            const statusLabels = Object.keys(statusCounts).map(s => s.charAt(0).toUpperCase() + s.slice(1));
+            const statusData = Object.values(statusCounts);
+            const statusColors = [
+                '#6c757d', // secondary (draft)
+                '#17a2b8', // info (sent)
+                '#28a745', // success (paid)
+                '#ffc107'  // warning (due)
+            ];
+
+            // Render Invoice Status Distribution Chart (Pie Chart)
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChartInstance = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: statusColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+
+            const recentInvoicesBody = $('#dashboardRecentInvoicesBody');
+            recentInvoicesBody.empty();
+            if (dummyInvoices.length > 0) {
+                dummyInvoices.slice(0, 5).forEach(invoice => {
+                    const buyer = dummyBuyers.find(b => b.id === invoice.buyerId);
+                    const statusBadgeClass =
+                        invoice.status === 'paid' ? 'badge-success' :
+                        invoice.status === 'due' ? 'badge-warning' :
+                        'badge-info';
+                    recentInvoicesBody.append(`
+                        <tr>
+                            <td>${invoice.invoiceNumber}</td>
+                            <td>${buyer ? buyer.name : 'N/A'}</td>
+                            <td>${formatDate(invoice.invoiceDate)}</td>
+                            <td>${formatCurrency(invoice.totalAmount)}</td>
+                            <td><span class="badge ${statusBadgeClass}">${invoice.status}</span></td>
+                        </tr>
+                    `);
+                });
+            } else {
+                recentInvoicesBody.append(`<tr><td colspan="5" class="text-center">No invoices found. Start by creating one!</td></tr>`);
+            }
+        };
+
+        // User Management Rendering
+        const renderUserManagement = (editUser = null) => {
+            const userTableContainer = $('#userTableContainer');
+            const userFormContainer = $('#userFormContainer');
+            if (editUser || (editUser === null && userFormContainer.is(':visible'))) {
+                 // Show user form
+                userTableContainer.hide();
+                userFormContainer.show();
+                userFormContainer.html(`
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">${editUser ? 'Edit User (Dummy Data)' : 'Add New User (Dummy Data)'}</h3>
+                        </div>
+                        <form id="userForm" class="form-horizontal">
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="userEmail" class="col-sm-3 col-form-label">Email</label>
+                                    <div class="col-sm-9">
+                                        <input type="email" class="form-control" id="userEmail" placeholder="Email" value="${editUser ? editUser.email : ''}" ${editUser ? 'disabled' : ''} required>
+                                    </div>
+                                </div>
+                                ${!editUser ? `
+                                <div class="form-group row">
+                                    <label for="userPassword" class="col-sm-3 col-form-label">Password</label>
+                                    <div class="col-sm-9">
+                                        <input type="password" class="form-control" id="userPassword" placeholder="Password" required>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                <div class="form-group row">
+                                    <label for="userRole" class="col-sm-3 col-form-label">Role</label>
+                                    <div class="col-sm-9">
+                                        <select id="userRole" class="form-control" required>
+                                            <option value="admin" ${editUser && editUser.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                            <option value="superadmin" ${editUser && editUser.role === 'superadmin' ? 'selected' : ''}>Super Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-default" id="cancelUserFormButton">Cancel</button>
+                                <button type="submit" class="btn btn-info float-right">Save User</button>
+                            </div>
+                        </form>
+                    </div>
+                `);
+
+                $('#userForm').off('submit').on('submit', (e) => {
+                    e.preventDefault();
+                    const email = $('#userEmail').val();
+                    const password = $('#userPassword').val();
+                    const role = $('#userRole').val();
+
+                    if (editUser) {
+                        const userIndex = dummyUsers.findIndex(u => u.id === editUser.id);
+                        if (userIndex !== -1) {
+                            dummyUsers[userIndex] = { ...dummyUsers[userIndex], email, role };
+                            console.log('User Updated:', dummyUsers[userIndex]);
+                            showAlert('Success', 'User updated successfully. (Dummy data: will not persist)');
+                        }
+                    } else {
+                        if (dummyUsers.some(u => u.email === email)) {
+                            showAlert('Error', 'User with this email already exists.');
+                            return;
+                        }
+                        const newId = `user${Date.now()}`;
+                        dummyUsers.push({ id: newId, email, password, role });
+                        console.log('User Added:', dummyUsers[dummyUsers.length - 1]);
+                        showAlert('Success', 'User created successfully. (Dummy data: will not persist)');
+                    }
+                    renderUserManagement(); // Re-render the list
+                });
+
+                $('#cancelUserFormButton').off('click').on('click', () => renderUserManagement());
+
+            } else { // Show user table
+                userFormContainer.hide();
+                userFormContainer.empty();
+                userTableContainer.show();
+                const userTableBody = $('#userTableBody');
+                userTableBody.empty();
+
+                if (dummyUsers.length > 0) {
+                    dummyUsers.forEach(user => {
+                        userTableBody.append(`
+                            <tr>
+                                <td>${user.email}</td>
+                                <td class="text-capitalize">${user.role}</td>
+                                <td><small>${user.id}</small></td>
+                                <td class="text-right">
+                                    <button class="btn btn-info btn-sm mr-1 edit-user-btn" data-id="${user.id}" title="Edit User">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    ${user.id !== currentUser.uid ? `
+                                    <button class="btn btn-danger btn-sm delete-user-btn" data-id="${user.id}" title="Delete User">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    $('.edit-user-btn').off('click').on('click', function() {
+                        const userId = $(this).data('id');
+                        const userToEdit = dummyUsers.find(u => u.id === userId);
+                        renderUserManagement(userToEdit);
+                    });
+
+                    $('.delete-user-btn').off('click').on('click', function() {
+                        const userId = $(this).data('id');
+                        showConfirmation('Delete User', 'Are you sure you want to delete this user? This action cannot be undone. (Dummy data: will not persist)', () => {
+                            dummyUsers = dummyUsers.filter(u => u.id !== userId);
+                            console.log('User Deleted. Current users:', dummyUsers);
+                            showAlert('Success', 'User deleted successfully. (Dummy data: will not persist)');
+                            renderUserManagement(); // Re-render the list
+                        });
+                    });
+                } else {
+                    userTableBody.append(`<tr><td colspan="4" class="text-center">No users found. Click "Add New User" to get started.</td></tr>`);
+                }
+            }
+        };
+
+        $('#addUserButton').on('click', () => renderUserManagement(null));
+
+
+        // Buyer Management Rendering
+        const renderBuyerManagement = (editBuyer = null) => {
+            const buyerTableContainer = $('#buyerTableContainer');
+            const buyerFormContainer = $('#buyerFormContainer');
+            if (editBuyer || (editBuyer === null && buyerFormContainer.is(':visible'))) {
+                buyerTableContainer.hide();
+                buyerFormContainer.show();
+                buyerFormContainer.html(`
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">${editBuyer ? 'Edit Buyer (Dummy Data)' : 'Add New Buyer (Dummy Data)'}</h3>
+                        </div>
+                        <form id="buyerForm" class="form-horizontal">
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="buyerName" class="col-sm-3 col-form-label">Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="buyerName" placeholder="Buyer Name" value="${editBuyer ? editBuyer.name : ''}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="buyerAddress" class="col-sm-3 col-form-label">Address</label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" id="buyerAddress" rows="3" placeholder="Buyer Address" required>${editBuyer ? editBuyer.address : ''}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="buyerContact" class="col-sm-3 col-form-label">Contact</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="buyerContact" placeholder="Contact Information" value="${editBuyer ? editBuyer.contact : ''}">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="buyerGstin" class="col-sm-3 col-form-label">GSTIN (Optional)</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="buyerGstin" placeholder="GSTIN" value="${editBuyer ? editBuyer.gstin : ''}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-default" id="cancelBuyerFormButton">Cancel</button>
+                                <button type="submit" class="btn btn-info float-right">Save Buyer</button>
+                            </div>
+                        </form>
+                    </div>
+                `);
+
+                $('#buyerForm').off('submit').on('submit', (e) => {
+                    e.preventDefault();
+                    const name = $('#buyerName').val();
+                    const address = $('#buyerAddress').val();
+                    const contact = $('#buyerContact').val();
+                    const gstin = $('#buyerGstin').val();
+
+                    if (editBuyer) {
+                        const buyerIndex = dummyBuyers.findIndex(b => b.id === editBuyer.id);
+                        if (buyerIndex !== -1) {
+                            dummyBuyers[buyerIndex] = { ...dummyBuyers[buyerIndex], name, address, contact, gstin };
+                            console.log('Buyer Updated:', dummyBuyers[buyerIndex]);
+                            showAlert('Success', 'Buyer updated successfully. (Dummy data: will not persist)');
+                        }
+                    } else {
+                        const newId = `buyer${Date.now()}`;
+                        dummyBuyers.push({ id: newId, name, address, contact, gstin });
+                        console.log('Buyer Added:', dummyBuyers[dummyBuyers.length - 1]);
+                        showAlert('Success', 'Buyer added successfully. (Dummy data: will not persist)');
+                    }
+                    renderBuyerManagement();
+                });
+
+                $('#cancelBuyerFormButton').off('click').on('click', () => renderBuyerManagement());
+            } else {
+                buyerFormContainer.hide();
+                buyerFormContainer.empty();
+                buyerTableContainer.show();
+                const buyerTableBody = $('#buyerTableBody');
+                buyerTableBody.empty();
+
+                if (dummyBuyers.length > 0) {
+                    dummyBuyers.forEach(buyer => {
+                        buyerTableBody.append(`
+                            <tr>
+                                <td>${buyer.name}</td>
+                                <td>${buyer.address}</td>
+                                <td>${buyer.contact}</td>
+                                <td>${buyer.gstin || 'N/A'}</td>
+                                <td class="text-right">
+                                    <button class="btn btn-info btn-sm mr-1 edit-buyer-btn" data-id="${buyer.id}" title="Edit Buyer">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm delete-buyer-btn" data-id="${buyer.id}" title="Delete Buyer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    $('.edit-buyer-btn').off('click').on('click', function() {
+                        const buyerId = $(this).data('id');
+                        const buyerToEdit = dummyBuyers.find(b => b.id === buyerId);
+                        renderBuyerManagement(buyerToEdit);
+                    });
+
+                    $('.delete-buyer-btn').off('click').on('click', function() {
+                        const buyerId = $(this).data('id');
+                        showConfirmation('Delete Buyer', 'Are you sure you want to delete this buyer? This action cannot be undone. (Dummy data: will not persist)', () => {
+                            dummyBuyers = dummyBuyers.filter(b => b.id !== buyerId);
+                            console.log('Buyer Deleted. Current buyers:', dummyBuyers);
+                            showAlert('Success', 'Buyer deleted successfully. (Dummy data: will not persist)');
+                            renderBuyerManagement();
+                        });
+                    });
+                } else {
+                    buyerTableBody.append(`<tr><td colspan="5" class="text-center">No buyers found. Click "Add New Buyer" to get started.</td></tr>`);
+                }
+            }
+        };
+
+        $('#addBuyerButton').on('click', () => renderBuyerManagement(null));
+
+        // Category Management Rendering
+        const renderCategoryManagement = () => {
+            const categoryTableBody = $('#categoryTableBody');
+            categoryTableBody.empty();
+
+            if (dummyCategories.length > 0) {
+                dummyCategories.forEach(category => {
+                    categoryTableBody.append(`
+                        <tr>
+                            <td><span class="category-name-display" data-id="${category.id}">${category.name}</span>
+                                <input type="text" class="form-control category-name-input" style="display:none;" value="${category.name}" data-id="${category.id}">
+                            </td>
+                            <td class="text-right">
+                                <button class="btn btn-info btn-sm mr-1 edit-category-btn" data-id="${category.id}" title="Edit Category">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-success btn-sm mr-1 save-category-btn" style="display:none;" data-id="${category.id}" title="Save Changes">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm delete-category-btn" data-id="${category.id}" title="Delete Category">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                $('.edit-category-btn').off('click').on('click', function() {
+                    const categoryId = $(this).data('id');
+                    const row = $(this).closest('tr');
+                    row.find('.category-name-display').hide();
+                    row.find('.category-name-input').show().focus();
+                    row.find('.edit-category-btn').hide();
+                    row.find('.save-category-btn').show();
+                });
+
+                $('.save-category-btn').off('click').on('click', function() {
+                    const categoryId = $(this).data('id');
+                    const row = $(this).closest('tr');
+                    const newName = row.find('.category-name-input').val().trim();
+
+                    if (!newName) {
+                        showAlert('Validation Error', 'Category name cannot be empty.');
+                        return;
+                    }
+
+                    const categoryIndex = dummyCategories.findIndex(c => c.id === categoryId);
+                    if (categoryIndex !== -1) {
+                        dummyCategories[categoryIndex].name = newName;
+                        console.log('Category Updated:', dummyCategories[categoryIndex]);
+                        showAlert('Success', 'Category updated successfully. (Dummy data: will not persist)');
+                        renderCategoryManagement(); // Re-render to update display
+                    }
+                });
+
+                $('.category-name-input').off('blur').on('blur', function() {
+                    // This blur handler attempts to save if the value has changed and it's not a click on save button
+                    const categoryId = $(this).data('id');
+                    const row = $(this).closest('tr');
+                    const currentCategory = dummyCategories.find(c => c.id === categoryId);
+                    const newName = $(this).val().trim();
+
+                    if (currentCategory && currentCategory.name !== newName && newName) {
+                         // Only save if name changed and is not empty
+                        const categoryIndex = dummyCategories.findIndex(c => c.id === categoryId);
+                        if (categoryIndex !== -1) {
+                            dummyCategories[categoryIndex].name = newName;
+                            console.log('Category Updated (on blur):', dummyCategories[categoryIndex]);
+                            showAlert('Success', 'Category updated successfully. (Dummy data: will not persist)');
+                        }
+                    }
+                    renderCategoryManagement(); // Re-render to update display
+                });
+
+                $('.category-name-input').off('keydown').on('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        $(this).blur(); // Trigger blur to save
+                    }
+                });
+
+
+                $('.delete-category-btn').off('click').on('click', function() {
+                    const categoryId = $(this).data('id');
+                    showConfirmation('Delete Category', 'Are you sure you want to delete this category? This will not delete products associated with it, but they will become uncategorized. (Dummy data: will not persist)', () => {
+                        dummyCategories = dummyCategories.filter(c => c.id !== categoryId);
+                        console.log('Category Deleted. Current categories:', dummyCategories);
+                        showAlert('Success', 'Category deleted successfully. (Dummy data: will not persist)');
+                        renderCategoryManagement();
+                    });
+                });
+            } else {
+                categoryTableBody.append(`<tr><td colspan="2" class="text-center">No categories found. Use the form above to add one.</td></tr>`);
+            }
+        };
+
+        $('#addCategoryForm').off('submit').on('submit', (e) => {
+            e.preventDefault();
+            const newCategoryName = $('#newCategoryName').val();
+            if (!newCategoryName.trim()) {
+                showAlert('Validation Error', 'Category name cannot be empty.');
+                return;
+            }
+            const newId = `cat${Date.now()}`;
+            dummyCategories.push({ id: newId, name: newCategoryName.trim() });
+            $('#newCategoryName').val(''); // Clear form
+            console.log('Category Added:', dummyCategories[dummyCategories.length - 1]);
+            showAlert('Success', 'Category added successfully. (Dummy data: will not persist)');
+            renderCategoryManagement(); // Re-render the list
+        });
+
+        // Product Management Rendering
+        const renderProductManagement = (editProduct = null) => {
+            const productTableContainer = $('#productTableContainer');
+            const productFormContainer = $('#productFormContainer');
+
+            const getCategoryOptions = (selectedId) => {
+                let options = '<option value="">-- Select Category --</option>';
+                if (dummyCategories.length > 0) {
+                    dummyCategories.forEach(cat => {
+                        options += `<option value="${cat.id}" ${selectedId === cat.id ? 'selected' : ''}>${cat.name}</option>`;
+                    });
+                } else {
+                    options += '<option value="" disabled>No Categories Available</option>';
+                }
+                return options;
+            };
+
+            if (editProduct || (editProduct === null && productFormContainer.is(':visible'))) {
+                productTableContainer.hide();
+                productFormContainer.show();
+                productFormContainer.html(`
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">${editProduct ? 'Edit Product/Service (Dummy Data)' : 'Add New Product/Service (Dummy Data)'}</h3>
+                        </div>
+                        <form id="productForm" class="form-horizontal">
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="productName" class="col-sm-3 col-form-label">Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="productName" placeholder="Product/Service Name" value="${editProduct ? editProduct.name : ''}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="productDescription" class="col-sm-3 col-form-label">Description</label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" id="productDescription" rows="2" placeholder="Description">${editProduct ? editProduct.description : ''}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="productPrice" class="col-sm-3 col-form-label">Price</label>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" id="productPrice" step="0.01" placeholder="Price" value="${editProduct ? editProduct.price : ''}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="productCategory" class="col-sm-3 col-form-label">Category</label>
+                                    <div class="col-sm-9">
+                                        <select id="productCategory" class="form-control" required>
+                                            ${getCategoryOptions(editProduct ? editProduct.categoryId : '')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn btn-default" id="cancelProductFormButton">Cancel</button>
+                                <button type="submit" class="btn btn-info float-right">Save Product</button>
+                            </div>
+                        </form>
+                    </div>
+                `);
+
+                $('#productForm').off('submit').on('submit', (e) => {
+                    e.preventDefault();
+                    const name = $('#productName').val();
+                    const description = $('#productDescription').val();
+                    const price = parseFloat($('#productPrice').val());
+                    const categoryId = $('#productCategory').val();
+
+                    if (editProduct) {
+                        const productIndex = dummyProducts.findIndex(p => p.id === editProduct.id);
+                        if (productIndex !== -1) {
+                            dummyProducts[productIndex] = { ...dummyProducts[productIndex], name, description, price, categoryId };
+                            console.log('Product Updated:', dummyProducts[productIndex]);
+                            showAlert('Success', 'Product updated successfully. (Dummy data: will not persist)');
+                        }
+                    } else {
+                        const newId = `prod${Date.now()}`;
+                        dummyProducts.push({ id: newId, name, description, price, categoryId });
+                        console.log('Product Added:', dummyProducts[dummyProducts.length - 1]);
+                        showAlert('Success', 'Product added successfully. (Dummy data: will not persist)');
+                    }
+                    renderProductManagement();
+                });
+
+                $('#cancelProductFormButton').off('click').on('click', () => renderProductManagement());
+            } else {
+                productFormContainer.hide();
+                productFormContainer.empty();
+                productTableContainer.show();
+                const productTableBody = $('#productTableBody');
+                productTableBody.empty();
+
+                if (dummyProducts.length > 0) {
+                    dummyProducts.forEach(product => {
+                        const categoryName = dummyCategories.find(c => c.id === product.categoryId)?.name || 'Uncategorized';
+                        productTableBody.append(`
+                            <tr>
+                                <td>${product.name}</td>
+                                <td>${product.description}</td>
+                                <td>${categoryName}</td>
+                                <td>${formatCurrency(product.price)}</td>
+                                <td class="text-right">
+                                    <button class="btn btn-info btn-sm mr-1 edit-product-btn" data-id="${product.id}" title="Edit Product">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm delete-product-btn" data-id="${product.id}" title="Delete Product">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    $('.edit-product-btn').off('click').on('click', function() {
+                        const productId = $(this).data('id');
+                        const productToEdit = dummyProducts.find(p => p.id === productId);
+                        renderProductManagement(productToEdit);
+                    });
+
+                    $('.delete-product-btn').off('click').on('click', function() {
+                        const productId = $(this).data('id');
+                        showConfirmation('Delete Product', 'Are you sure you want to delete this product? This action cannot be undone. (Dummy data: will not persist)', () => {
+                            dummyProducts = dummyProducts.filter(p => p.id !== productId);
+                            console.log('Product Deleted. Current products:', dummyProducts);
+                            showAlert('Success', 'Product deleted successfully. (Dummy data: will not persist)');
+                            renderProductManagement();
+                        });
+                    });
+                } else {
+                    productTableBody.append(`<tr><td colspan="5" class="text-center">No products/services found. Click "Add New Product" to get started.</td></tr>`);
+                }
+            }
+        };
+
+        $('#addProductButton').on('click', () => renderProductManagement(null));
+
+        // Company Profile Management Rendering
+        const renderCompanyProfileManagement = () => {
+            if (userRole !== 'superadmin') {
+                $('#companyProfilePage').html('<div class="alert alert-danger text-center">Access Denied: You do not have permission to view this page.</div>');
+                return;
+            }
+
+            $('#companyProfileName').val(dummyCompanyProfile.name || '');
+            $('#companyProfileAddress').val(dummyCompanyProfile.address || '');
+            $('#companyProfileLogoUrl').val(dummyCompanyProfile.logoUrl || '');
+            $('#bankName').val(dummyCompanyProfile.bankDetails?.bankName || '');
+            $('#accountNumber').val(dummyCompanyProfile.bankDetails?.accountNumber || '');
+            $('#ifscCode').val(dummyCompanyProfile.bankDetails?.ifscCode || '');
+            $('#companyProfileTerms').val(dummyCompanyProfile.termsAndConditions || '');
+            $('#companyProfilePlaceOfSupply').val(dummyCompanyProfile.placeOfSupply || '');
+
+            const logoPreviewContainer = $('#companyLogoPreviewContainer');
+            const logoPreview = $('#companyLogoPreview');
+            if (dummyCompanyProfile.logoUrl) {
+                // Corrected line: Use logoPreview to set the src attribute of the img tag
+                logoPreview.attr('src', dummyCompanyProfile.logoUrl);
+                logoPreviewContainer.show();
+                logoPreview.off('error').on('error', function() {
+                    $(this).attr('src', 'https://placehold.co/100x50/cccccc/000000?text=Logo');
+                });
+            } else {
+                logoPreviewContainer.hide();
+            }
+
+            $('#companyProfileForm').off('submit').on('submit', (e) => {
+                e.preventDefault();
+                dummyCompanyProfile = {
+                    name: $('#companyProfileName').val(),
+                    address: $('#companyProfileAddress').val(),
+                    logoUrl: $('#companyProfileLogoUrl').val(),
+                    bankDetails: {
+                        bankName: $('#bankName').val(),
+                        accountNumber: $('#accountNumber').val(),
+                        ifscCode: $('#ifscCode').val(),
+                    },
+                    termsAndConditions: $('#companyProfileTerms').val(),
+                    placeOfSupply: $('#companyProfilePlaceOfSupply').val(),
+                };
+                console.log('Company Profile Updated:', dummyCompanyProfile);
+                showAlert('Success', 'Company profile updated successfully. (Dummy data: will not persist)');
+            });
+
+            $('#companyProfileLogoUrl').off('input').on('input', function() {
+                const url = $(this).val();
+                if (url) {
+                    logoPreview.attr('src', url);
+                    logoPreviewContainer.show();
+                    logoPreview.off('error').on('error', function() {
+                        $(this).attr('src', 'https://placehold.co/100x50/cccccc/000000?text=Logo');
+                    });
+                } else {
+                    logoPreviewContainer.hide();
+                }
+            });
+        };
+
+        // Invoice Management Rendering
+        const renderInvoiceManagement = () => {
+            const invoiceTableBody = $('#invoiceTableBody');
+            invoiceTableBody.empty();
+
+            const searchQuery = $('#invoiceSearchInput').val().toLowerCase();
+            const filterStatus = $('#invoiceStatusFilter').val();
+
+            const filteredInvoices = dummyInvoices.filter(invoice => {
+                const buyer = dummyBuyers.find(b => b.id === invoice.buyerId);
+                const buyerName = buyer ? buyer.name : 'Unknown Buyer';
+                const matchesSearch = invoice.invoiceNumber.toLowerCase().includes(searchQuery) ||
+                                      buyerName.toLowerCase().includes(searchQuery);
+                const matchesStatus = filterStatus === 'all' || invoice.status === filterStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filteredInvoices.length > 0) {
+                filteredInvoices.forEach(invoice => {
+                    const buyer = dummyBuyers.find(b => b.id === invoice.buyerId);
+                    const statusBadgeClass =
+                        invoice.status === 'paid' ? 'badge-success' :
+                        invoice.status === 'due' ? 'badge-warning' :
+                        invoice.status === 'sent' ? 'badge-info' :
+                        'badge-secondary';
+                    invoiceTableBody.append(`
+                        <tr>
+                            <td>${invoice.invoiceNumber}</td>
+                            <td>${buyer ? buyer.name : 'N/A'}</td>
+                            <td>${formatDate(invoice.invoiceDate)}</td>
+                            <td>${formatDate(invoice.dueDate)}</td>
+                            <td>${formatCurrency(invoice.totalAmount)}</td>
+                            <td><span class="badge ${statusBadgeClass}">${invoice.status}</span></td>
+                            <td class="text-right">
+                                <button class="btn btn-primary btn-sm mr-1 view-invoice-btn" data-id="${invoice.id}" title="View Invoice">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-info btn-sm mr-1 edit-invoice-btn" data-id="${invoice.id}" title="Edit Invoice">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm delete-invoice-btn" data-id="${invoice.id}" title="Delete Invoice">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                $('.view-invoice-btn').off('click').on('click', function() {
+                    const invoiceId = $(this).data('id');
+                    navigateTo('viewInvoice', { invoiceId });
+                });
+
+                $('.edit-invoice-btn').off('click').on('click', function() {
+                    const invoiceId = $(this).data('id');
+                    navigateTo('editInvoice', { invoiceId });
+                });
+
+                $('.delete-invoice-btn').off('click').on('click', function() {
+                    const invoiceId = $(this).data('id');
+                    showConfirmation('Delete Invoice', 'Are you sure you want to delete this invoice? This action cannot be undone. (Dummy data: will not persist)', () => {
+                        dummyInvoices = dummyInvoices.filter(inv => inv.id !== invoiceId);
+                        console.log('Invoice Deleted. Current invoices:', dummyInvoices);
+                        showAlert('Success', 'Invoice deleted successfully. (Dummy data: will not persist)');
+                        renderInvoiceManagement();
+                    });
+                });
+            } else {
+                invoiceTableBody.append(`<tr><td colspan="7" class="text-center">No invoices found matching your criteria.</td></tr>`);
+            }
+        };
+
+        $('#invoiceSearchInput').on('input', renderInvoiceManagement);
+        $('#invoiceStatusFilter').on('change', renderInvoiceManagement);
+        $('#createInvoiceButton').on('click', () => navigateTo('createInvoice'));
+
+        // Invoice Form (Create/Edit) Rendering
+        const renderInvoiceForm = (mode, invoiceId = null) => {
+            const isEditMode = mode === 'edit';
+            $('#invoiceFormTitle').text(isEditMode ? 'Edit Invoice (Dummy Data)' : 'Create New Invoice (Dummy Data)');
+            $('#invoiceIdInput').val(invoiceId || ''); // Store ID for edit mode
+
+            let currentInvoice = null;
+            if (isEditMode && invoiceId) {
+                currentInvoice = dummyInvoices.find(inv => inv.id === invoiceId);
+                if (!currentInvoice) {
+                    showAlert('Error', 'Invoice not found for editing. (Dummy data)');
+                    navigateTo('invoiceManagement');
+                    return;
+                }
+            }
+
+            // Populate form fields
+            $('#invoiceFormNumber').val(currentInvoice ? currentInvoice.invoiceNumber : generateDummyInvoiceNumber());
+            $('#invoiceFormDate').val(currentInvoice ? formatDateForInput(currentInvoice.invoiceDate) : new Date().toISOString().slice(0, 10));
+            $('#invoiceFormDueDate').val(currentInvoice ? formatDateForInput(currentInvoice.dueDate) : '');
+            $('#invoiceFormStatus').val(currentInvoice ? currentInvoice.status : 'draft');
+            $('#invoiceFormTerms').val(currentInvoice ? currentInvoice.termsAndConditions : dummyCompanyProfile.termsAndConditions);
+            $('#invoiceFormBankName').val(currentInvoice ? currentInvoice.bankDetails?.bankName : dummyCompanyProfile.bankDetails?.bankName);
+            $('#invoiceFormAccountNumber').val(currentInvoice ? currentInvoice.bankDetails?.accountNumber : dummyCompanyProfile.bankDetails?.accountNumber);
+            $('#invoiceFormIfscCode').val(currentInvoice ? currentInvoice.bankDetails?.ifscCode : dummyCompanyProfile.bankDetails?.ifscCode);
+
+            // Populate buyers dropdown
+            const buyerSelect = $('#invoiceFormBuyer');
+            buyerSelect.empty();
+            buyerSelect.append('<option value="">-- Select a Buyer --</option>');
+            dummyBuyers.forEach(buyer => {
+                const selected = (currentInvoice && currentInvoice.buyerId === buyer.id) ? 'selected' : '';
+                buyerSelect.append(`<option value="${buyer.id}" ${selected}>${buyer.name}</option>`);
+            });
+            if (!currentInvoice && dummyBuyers.length > 0) {
+                 buyerSelect.val(dummyBuyers[0].id); // Select first buyer by default for new invoice
+            }
+
+
+            // Populate invoice items
+            const invoiceItemsContainer = $('#invoiceItemsContainer');
+            invoiceItemsContainer.empty();
+            let initialItems = currentInvoice ? currentInvoice.items : [{ productId: '', quantity: 1, price: 0 }];
+
+            initialItems.forEach((item, index) => {
+                addInvoiceItemRow(item, index);
+            });
+
+            // If no items in edit mode, add one empty row
+            if (isEditMode && initialItems.length === 0) {
+                 addInvoiceItemRow({ productId: '', quantity: 1, price: 0 });
+            }
+
+            updateInvoiceTotals(); // Calculate initial totals
+
+            $('#addInvoiceItemButton').off('click').on('click', () => addInvoiceItemRow({ productId: '', quantity: 1, price: 0 }));
+
+            $('#invoiceItemsContainer').off('input', '.item-quantity, .item-price, .item-product').on('input', '.item-quantity, .item-price, .item-product', function() {
+                const index = $(this).closest('.card-body').data('index');
+                const field = $(this).hasClass('item-quantity') ? 'quantity' :
+                              $(this).hasClass('item-price') ? 'price' : 'productId';
+                const value = $(this).val();
+
+                const updatedItem = { ...getCurrentFormItems()[index] };
+                if (field === 'productId') {
+                    const selectedProduct = dummyProducts.find(p => p.id === value);
+                    updatedItem.productId = value;
+                    updatedItem.price = selectedProduct ? selectedProduct.price : 0;
+                    // Update the price input field directly if product changes
+                    $(`#item-price-${index}`).val(updatedItem.price);
+                } else {
+                    updatedItem[field] = value;
+                }
+
+                // Update the hidden items array
+                const currentItems = getCurrentFormItems();
+                currentItems[index] = updatedItem;
+                updateInvoiceTotals(currentItems);
+            });
+
+            $('#invoiceItemsContainer').off('click', '.remove-item-btn').on('click', function() {
+                const indexToRemove = $(this).closest('.card-body').data('index');
+                const currentItems = getCurrentFormItems().filter((_, i) => i !== indexToRemove);
+                setCurrentFormItems(currentItems);
+                renderInvoiceItems(currentItems); // Re-render all items
+                updateInvoiceTotals();
+            });
+
+            $('#invoiceForm').off('submit').on('submit', (e) => {
+                e.preventDefault();
+                saveInvoice(isEditMode, invoiceId);
+            });
+
+            $('#cancelInvoiceFormButton').off('click').on('click', () => navigateTo('invoiceManagement'));
+
+            // Update totals when inputs change directly (outside of item rows)
+            $('#invoiceFormDate, #invoiceFormDueDate, #invoiceFormBuyer, #invoiceFormStatus').on('change', () => {
+                updateInvoiceTotals();
+            });
+        };
+
+        // Helper to get current items from the form, handling dynamic fields
+        const getCurrentFormItems = () => {
+            const items = [];
+            $('#invoiceItemsContainer .card-body').each(function() {
+                const productId = $(this).find('.item-product').val();
+                const quantity = parseInt($(this).find('.item-quantity').val(), 10);
+                const price = parseFloat($(this).find('.item-price').val());
+                items.push({ productId, quantity, price });
+            });
+            return items;
+        };
+
+        // Helper to set items in the form, used after remove for re-render
+        const setCurrentFormItems = (newItems) => {
+             const invoiceItemsContainer = $('#invoiceItemsContainer');
+             invoiceItemsContainer.empty();
+             newItems.forEach((item, index) => {
+                 addInvoiceItemRow(item, index);
+             });
+             updateInvoiceTotals(newItems);
+        };
+
+
+        const addInvoiceItemRow = (item, index) => {
+            const invoiceItemsContainer = $('#invoiceItemsContainer');
+            const newIndex = typeof index === 'number' ? index : invoiceItemsContainer.children().length;
+
+            let productOptions = '<option value="">-- Select Product/Service --</option>';
+            dummyProducts.forEach(prod => {
+                const selected = item.productId === prod.id ? 'selected' : '';
+                productOptions += `<option value="${prod.id}" ${selected}>${prod.name} (${formatCurrency(prod.price)})</option>`;
+            });
+
+            invoiceItemsContainer.append(`
+                <div class="card card-outline card-secondary mb-3">
+                    <div class="card-body" data-index="${newIndex}">
+                        <div class="form-group row">
+                            <label for="item-product-${newIndex}" class="col-sm-3 col-form-label">Product</label>
+                            <div class="col-sm-9">
+                                <select id="item-product-${newIndex}" class="form-control item-product" required>
+                                    ${productOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="item-quantity-${newIndex}" class="col-sm-3 col-form-label">Quantity</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control item-quantity" id="item-quantity-${newIndex}" min="1" value="${item.quantity}" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="item-price-${newIndex}" class="col-sm-3 col-form-label">Unit Price</label>
+                            <div class="col-sm-9">
+                                <input type="number" class="form-control item-price" id="item-price-${newIndex}" step="0.01" value="${item.price}" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="offset-sm-3 col-sm-9">
+                                <button type="button" class="btn btn-danger btn-sm float-right remove-item-btn">
+                                    <i class="fas fa-trash"></i> Remove Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        };
+
+        const renderInvoiceItems = (items) => {
+            const invoiceItemsContainer = $('#invoiceItemsContainer');
+            invoiceItemsContainer.empty();
+            items.forEach((item, index) => {
+                addInvoiceItemRow(item, index);
+            });
+        };
+
+
+        const updateInvoiceTotals = (currentItems = null) => {
+            const itemsToCalculate = currentItems || getCurrentFormItems();
+            const { subTotal, taxAmount, totalAmount } = calculateDummyInvoiceTotals(itemsToCalculate);
+            $('#invoiceFormSubTotal').text(formatCurrency(subTotal));
+            $('#invoiceFormTaxAmount').text(formatCurrency(taxAmount));
+            $('#invoiceFormTotalAmount').text(formatCurrency(totalAmount));
+        };
+
+        const formatDateForInput = (dateObject) => {
+            if (!dateObject) return '';
+            const date = dateObject instanceof Date ? dateObject : new Date(dateObject);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const saveInvoice = (isEditMode, invoiceId) => {
+            const invoiceNumber = $('#invoiceFormNumber').val();
+            const invoiceDate = $('#invoiceFormDate').val();
+            const dueDate = $('#invoiceFormDueDate').val();
+            const selectedBuyerId = $('#invoiceFormBuyer').val();
+            const status = $('#invoiceFormStatus').val();
+            const termsAndConditions = $('#invoiceFormTerms').val();
+            const bankName = $('#invoiceFormBankName').val();
+            const accountNumber = $('#invoiceFormAccountNumber').val();
+            const ifscCode = $('#invoiceFormIfscCode').val();
+
+            if (!selectedBuyerId) {
+                showAlert('Validation Error', 'Please select a buyer.');
+                return;
+            }
+
+            const formItems = getCurrentFormItems();
+            if (formItems.length === 0) {
+                showAlert('Validation Error', 'Please add at least one item to the invoice.');
+                return;
+            }
+            if (formItems.some(item => !item.productId || item.quantity <= 0 || item.price < 0)) {
+                showAlert('Validation Error', 'Please ensure all invoice items have a selected product, a quantity greater than zero, and a valid price.');
+                return;
+            }
+
+            const { subTotal, taxAmount, totalAmount } = calculateDummyInvoiceTotals(formItems);
+
+            const invoiceData = {
+                invoiceNumber,
+                invoiceDate: new Date(invoiceDate),
+                dueDate: new Date(dueDate),
+                buyerId: selectedBuyerId,
+                companyId: 'main_company', // Assuming a single company profile
+                items: formItems.map(item => ({
+                    productId: item.productId,
+                    quantity: parseInt(item.quantity, 10),
+                    price: parseFloat(item.price),
+                    total: parseFloat(item.price) * parseInt(item.quantity, 10),
+                })),
+                subTotal,
+                taxAmount,
+                totalAmount,
+                status,
+                termsAndConditions,
+                bankDetails: { bankName, accountNumber, ifscCode },
+            };
+
+            if (isEditMode) {
+                const invoiceIndex = dummyInvoices.findIndex(inv => inv.id === invoiceId);
+                if (invoiceIndex !== -1) {
+                    dummyInvoices[invoiceIndex] = { ...dummyInvoices[invoiceIndex], ...invoiceData, id: invoiceId }; // Preserve original ID
+                    console.log('Invoice Updated:', dummyInvoices[invoiceIndex]);
+                    showAlert('Success', 'Invoice updated successfully. (Dummy data: will not persist)');
+                }
+            } else {
+                const newId = `inv${Date.now()}`;
+                dummyInvoices.push({ id: newId, ...invoiceData });
+                console.log('Invoice Created:', dummyInvoices[dummyInvoices.length - 1]);
+                showAlert('Success', 'Invoice created successfully. (Dummy data: will not persist)');
+            }
+            navigateTo('invoiceManagement');
+        };
+
+        // Invoice Preview Rendering
+        const renderInvoicePreview = (invoiceId) => {
+            const invoice = dummyInvoices.find(inv => inv.id === invoiceId);
+            const buyer = dummyBuyers.find(b => b.id === invoice?.buyerId);
+            const company = dummyCompanyProfile;
+
+            if (!invoice || !buyer || !company) {
+                showAlert('Error', 'Invoice data is incomplete or missing. (Dummy data)');
+                navigateTo('invoiceManagement');
+                return;
+            }
+
+            $('#invoicePreviewTitle').text(`Invoice Details: ${invoice.invoiceNumber}`);
+
+            const previewCompanyLogo = $('#previewCompanyLogo');
+            const previewCompanyGlobeIcon = $('#previewCompanyGlobeIcon');
+            const previewCompanyName = $('#previewCompanyName');
+
+            if (company.logoUrl) {
+                previewCompanyLogo.html(`<img src="${company.logoUrl}" alt="Company Logo" class="img-fluid" style="max-height: 90px;" onerror="this.onerror=null; this.src='https://placehold.co/150x80/cccccc/000000?text=Company+Logo';">`);
+                previewCompanyGlobeIcon.hide();
+                previewCompanyName.text(''); // Clear text as logo is present
+            } else {
+                previewCompanyLogo.empty();
+                previewCompanyGlobeIcon.show();
+                previewCompanyName.text(company.name || 'Your Company');
+            }
+
+
+            $('#previewCompanyAddressName').text(company.name);
+            $('#previewCompanyAddress').html(company.address.split(',').map(line => `<span>${line.trim()}</span><br>`).join(''));
+            $('#previewCompanyPlaceOfSupply').text(company.placeOfSupply || 'N/A');
+
+            $('#previewInvoiceDate').text(formatDate(invoice.invoiceDate));
+            $('#previewInvoiceNumber').text(invoice.invoiceNumber);
+
+            $('#previewBuyerName').text(buyer.name);
+            $('#previewBuyerAddress').html(buyer.address.split(',').map(line => `<span>${line.trim()}</span><br>`).join(''));
+            $('#previewBuyerContact').text(buyer.contact);
+            $('#previewBuyerGstin').text(buyer.gstin || 'N/A');
+
+            $('#previewDueDate').text(formatDate(invoice.dueDate));
+            const statusBadgeClass =
+                invoice.status === 'paid' ? 'badge-success' :
+                invoice.status === 'due' ? 'badge-warning' :
+                invoice.status === 'sent' ? 'badge-info' :
+                'badge-secondary';
+            $('#previewStatusBadge').removeClass().addClass(`badge ${statusBadgeClass}`).text(invoice.status.toUpperCase());
+
+            const previewInvoiceItemsBody = $('#previewInvoiceItemsBody');
+            previewInvoiceItemsBody.empty();
+            invoice.items.forEach(item => {
+                const product = dummyProducts.find(p => p.id === item.productId);
+                previewInvoiceItemsBody.append(`
+                    <tr>
+                        <td>${item.quantity}</td>
+                        <td>${product?.name || 'N/A'}</td>
+                        <td>${product?.description || ''}</td>
+                        <td>${formatCurrency(item.price)}</td>
+                        <td>${formatCurrency(item.total)}</td>
+                    </tr>
+                `);
+            });
+
+            $('#previewSubTotal').text(formatCurrency(invoice.subTotal));
+            $('#previewTaxAmount').text(formatCurrency(invoice.taxAmount));
+            $('#previewTotalAmount').text(formatCurrency(invoice.totalAmount));
+
+            $('#previewBankName').text(invoice.bankDetails?.bankName || 'N/A');
+            $('#previewAccountNumber').text(invoice.bankDetails?.accountNumber || 'N/A');
+            $('#previewIfscCode').text(invoice.bankDetails?.ifscCode || 'N/A');
+            $('#previewTermsAndConditions').text(invoice.termsAndConditions || 'Payment is due within 30 days. Late payments may incur fees.');
+
+            $('#previewGeneratedByEmail').text(currentUser.email);
+            $('#previewGeneratedByUid').text(currentUser.uid);
+
+            $('#invoicePreviewBackButton').off('click').on('click', () => navigateTo('invoiceManagement'));
+            $('#invoicePreviewSendEmail').off('click').on('click', () => showAlert('Email Functionality', 'Email sending functionality requires a backend server and is not implemented in this client-side demo.'));
+            $('#invoicePreviewDownloadPdf').off('click').on('click', handleDownloadPdf);
+            $('#invoicePreviewPrint').off('click').on('click', handlePrint);
+        };
+
+        const handleDownloadPdf = () => {
+            const invoiceContent = document.getElementById('invoice-content');
+            if (invoiceContent) {
+                if (typeof window.html2canvas === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                    showAlert('Missing Libraries', 'The necessary libraries for PDF (html2canvas, jsPDF) are not available. Please ensure they are loaded via CDN.');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+
+                html2canvas(invoiceContent, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgWidth = 210;
+                    const pageHeight = 297;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    const invoiceNumber = $('#previewInvoiceNumber').text().replace('#', '');
+                    pdf.save(`invoice-${invoiceNumber}.pdf`);
+                    showAlert('Success', 'Invoice downloaded as PDF.');
+                }).catch(error => {
+                    console.error("Error during PDF download:", error);
+                    showAlert('Download Error', 'Failed to generate PDF. Please try again.');
+                });
+            } else {
+                showAlert('Download Error', 'Invoice content not found for PDF generation.');
+            }
+        };
+
+        const handlePrint = () => {
+            // This is a simplified print function that triggers the browser's print dialog.
+            // For more control, one might use jspdf to create a printable PDF and then print that.
+            window.print();
+        };
+
+
+        // Event Listeners for Sidebar Navigation
+        document.querySelectorAll('.main-sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                const pageId = this.getAttribute('data-page');
+                navigateTo(pageId);
+            });
+        });
+
+        // Initial Load
+        $(document).ready(function() {
+            // Simulate a logged-in user for demonstration
+            currentUser = { uid: 'dummy_user_id', email: 'admin@example.com' };
+            userRole = 'superadmin'; // Set a default role for demo
+            checkAuthAndRender();
+        });
+    </script>
+</body>
+</html>
