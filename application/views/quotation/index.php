@@ -51,9 +51,13 @@
               {data: 'contact_person'},
               {data: 'department'},
               {data: 'state'},
-              {data: 'created_at', render: function(data) { 
-                  return new Date(data).toLocaleDateString('en-GB');
-              }},
+              {data: 'created_at', render: function (data) {
+                      if (!data) {
+              return '';
+            }
+                      var d = new Date(data);
+                      return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB');
+                  }},
               {
                   data: 'attachment',
                   render: function (data, type, row) {
@@ -117,7 +121,7 @@
               cancelButtonText: 'Cancel'
           }).then((result) => {
               if (result.isConfirmed) {
-                  $.get('<?php echo site_url('quotation/delete'); ?>/' + id, function(response) {
+                  $.get('<?php echo site_url('quotation/delete'); ?>/' + id, function (response) {
                       var result = JSON.parse(response);
                       if (result.status === 'success') {
                           Swal.fire('Deleted!', result.message, 'success').then(() => {
@@ -126,7 +130,7 @@
                       } else {
                           Swal.fire('Error!', result.message, 'error');
                       }
-                  }).fail(function() {
+                  }).fail(function () {
                       Swal.fire('Error!', 'Failed to delete quotation.', 'error');
                   });
               }

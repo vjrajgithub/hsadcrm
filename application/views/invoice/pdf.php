@@ -47,5 +47,9 @@
         <p><strong>Total:</strong> ₹<?= number_format($invoice->total, 2) ?><br>
             <strong>GST:</strong> ₹<?= number_format($invoice->gst_total, 2) ?><br>
             <strong>Grand Total:</strong> ₹<?= number_format($invoice->grand_total, 2) ?></p>
+
+        <p><strong>Amount in words:</strong>
+            <?= ucwords(convert_number_to_words($invoice->grand_total)) ?> Only
+        </p>
     </body>
 </html>

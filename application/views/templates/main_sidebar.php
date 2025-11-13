@@ -115,13 +115,13 @@
 
                 <!-- Settings -->
                 <li class="nav-header text-uppercase text-muted">Settings</li>
-                <li class="nav-item">
-                    <a href="<?= site_url('user') ?>"
-                       class="nav-link <?= uri_string() == 'user' ? 'active' : '' ?>">
-                        <i class="nav-icon fas fa-user-cog"></i>
-                        <p>User Management</p>
-                    </a>
-                </li>
+                <!--<li class="nav-item">-->
+                <!--    <a href="<?= site_url('user') ?>"-->
+                <!--       class="nav-link <?= uri_string() == 'user' ? 'active' : '' ?>">-->
+                <!--        <i class="nav-icon fas fa-user-cog"></i>-->
+                <!--        <p>User Management</p>-->
+                <!--    </a>-->
+                <!--</li>-->
 
                 <?php if ($this->session->userdata('user_role') === 'Super Admin'): ?>
                   <!-- User Management (Super Admin Only) -->

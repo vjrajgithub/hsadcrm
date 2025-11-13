@@ -232,7 +232,18 @@
             ?>
             <tr>
                 <td><?php echo $i++; ?></td>
-                <td style="text-align:left;"><?php echo isset($item->product_name) ? $item->product_name : 'Product Name'; ?></td>
+                <td style="text-align:left;">
+                    <?php
+                    $parts = [];
+                    $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                    $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                    if ($category_name !== '') { $parts[] = $category_name; }
+                    if (!empty($item->description)) { $parts[] = trim($item->description); }
+                    if ($product_name !== '') { $parts[] = $product_name; }
+                    $combined = implode(', ', $parts);
+                    echo htmlspecialchars($combined !== '' ? $combined : 'Product / Service');
+                    ?>
+                </td>
                 <td><?php echo isset($quotation->hsn_sac) ? $quotation->hsn_sac : '998314'; ?></td>
                 <td><?php echo $qty; ?></td>
                 <td style="text-align:right;">₹<?php echo number_format($rate, 2); ?></td>

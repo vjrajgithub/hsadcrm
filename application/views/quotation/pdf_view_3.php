@@ -114,7 +114,16 @@
                                 <?php foreach ($items as $item): ?>
                                   <tr>
                                       <td align="center"><?= $i++ ?></td>
-                                      <td valign="top"><?= $item->product_name ?></td>
+                                      <td valign="top"><?php
+                                        $parts = [];
+                                        $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                                        $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                                        if ($category_name !== '') { $parts[] = $category_name; }
+                                        if (!empty($item->description)) { $parts[] = trim($item->description); }
+                                        if ($product_name !== '') { $parts[] = $product_name; }
+                                        $combined = implode(', ', $parts);
+                                        echo htmlspecialchars($combined !== '' ? $combined : 'Product / Service');
+                                      ?></td>
                                       <td align="center"><?= $quotation->hsn_sac ?></td>
                                       <td align="center"><?= $item->qty ?></td>
                                       <td align="right"><?= number_format($item->rate, 2) ?></td>
@@ -148,7 +157,7 @@
 
                                 <!-- In Words -->
                                 <tr>
-                                    <td colspan="6"><strong><?= ucwords(convert_number_to_words($quotation->total_amount, 2)) ?></strong></td>
+                                    <td colspan="6"><strong><?= ucwords(convert_number_to_words($quotation->total_amount)) ?> Only</strong></td>
                                 </tr>
 
                                 <!-- Bank Details -->

@@ -5,6 +5,7 @@
         display: none;
     }
 </style>
+
 <section class="content-header d-flex justify-content-between align-items-center">
     <h1>Edit Quotation <small>#<?= $quotation->id ?></small></h1>
 </section>
@@ -169,7 +170,7 @@
                                     <tr>
                                         <td>
                                             <input type="checkbox" class="form-check-input use-dropdown-checkbox" value="1" <?= $use_dropdown ? 'checked' : '' ?>>
-                                            <input type="hidden" name="items[<?= $index ?>][use_dropdown]" value="<?= $use_dropdown ? '1' : '0' ?>">
+                                            <input type="hidden" name="items[<?= $index ?>][use_dropdown]" value="<?= $use_dropdown ? '1' : '0' ?>" class="use-dropdown-hidden">
                                         </td>
                                         <td>
                                             <select name="items[<?= $index ?>][category_id]" class="form-control category-select" <?= $use_dropdown ? 'required' : '' ?> style="<?= $use_dropdown ? '' : 'display:none;' ?>">
@@ -206,7 +207,7 @@
                                   <tr>
                                       <td>
                                           <input type="checkbox" class="form-check-input use-dropdown-checkbox" value="1" checked>
-                                          <input type="hidden" name="items[0][use_dropdown]" value="1">
+                                          <input type="hidden" name="items[0][use_dropdown]" value="1" class="use-dropdown-hidden">
                                       </td>
                                       <td>
                                           <select name="items[0][category_id]" class="form-control category-select" required>
@@ -280,32 +281,43 @@
       // Calculate totals on page load
       calculateTotal();
 
-      // Initialize CKEditor for existing description fields that are visible
+      // Initialize CKEditor for existing description fields that are visible (use_dropdown unchecked)
       setTimeout(function () {
-          $('.description-field:visible').each(function () {
-              const fieldName = $(this).attr('name');
-              if (fieldName && !CKEDITOR.instances[fieldName]) {
-                  const editor = CKEDITOR.replace(fieldName, {
-                      height: 150,
-                      toolbar: [
-                          {name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike']},
-                          {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']},
-                          {name: 'links', items: ['Link', 'Unlink']},
-                          {name: 'insert', items: ['Table', 'HorizontalRule']},
-                          {name: 'styles', items: ['Format']},
-                          {name: 'colors', items: ['TextColor', 'BGColor']},
-                          {name: 'tools', items: ['Maximize']}
-                      ],
-                      removePlugins: 'elementspath',
-                      resize_enabled: false
-                  });
+          $('#itemsTable tbody tr').each(function () {
+              const row = $(this);
+              const checkbox = row.find('.use-dropdown-checkbox');
+              const isChecked = checkbox.is(':checked');
+              const descField = row.find('.description-field');
+              const fieldName = descField.attr('name');
 
-                  editor.on('change', function () {
-                      editor.updateElement();
-                      calculateTotal();
-                  });
+              // Only initialize CKEditor if dropdown is NOT being used
+              if (!isChecked && fieldName && !CKEDITOR.instances[fieldName]) {
+                  try {
+                      const editor = CKEDITOR.replace(fieldName, {
+                          height: 150,
+                          toolbar: [
+                              {name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike']},
+                              {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']},
+                              {name: 'links', items: ['Link', 'Unlink']},
+                              {name: 'insert', items: ['Table', 'HorizontalRule']},
+                              {name: 'styles', items: ['Format']},
+                              {name: 'colors', items: ['TextColor', 'BGColor']},
+                              {name: 'tools', items: ['Maximize']}
+                          ],
+                          removePlugins: 'elementspath',
+                          resize_enabled: false
+                      });
 
-                  editorInstances[fieldName] = editor;
+                      if (editor) {
+                          editor.on('change', function () {
+                              editor.updateElement();
+                              calculateTotal();
+                          });
+                          editorInstances[fieldName] = editor;
+                      }
+                  } catch (e) {
+                      console.error('CKEditor init error:', e);
+                  }
               }
           });
       }, 500);
@@ -315,67 +327,18 @@
               const row = $(this);
               const checkbox = row.find('.use-dropdown-checkbox');
               const isChecked = checkbox.is(':checked');
-              const descField = row.find('.description-field');
-              const fieldName = descField.attr('name');
-              const hiddenField = row.find('input[type="hidden"][name*="use_dropdown"]');
 
-              // Synchronize hidden field with checkbox state
-              if (hiddenField.length === 0) {
-                  // If hidden field doesn't exist, add it
-                  const index = row.index();
-                  const hiddenHtml = `<input type="hidden" name="items[${index}][use_dropdown]" value="${isChecked ? '1' : '0'}">`;
-                  checkbox.after(hiddenHtml);
-              } else {
-                  hiddenField.val(isChecked ? '1' : '0');
-              }
-
+              // Set initial visibility based on checkbox state
               if (isChecked) {
-                  // Dropdown mode
                   row.find('.category-select').show().prop('required', true);
                   row.find('.product-select').show().prop('required', true);
-                  descField.hide().prop('required', false);
-                  // Destroy and hide any CKEditor instance/container
-                  if (fieldName && CKEDITOR.instances[fieldName]) {
-                      try {
-              CKEDITOR.instances[fieldName].destroy();
-            } catch (e) {
-            }
-                      delete editorInstances[fieldName];
-                  }
-                  const editorId = fieldName ? ('cke_' + fieldName.replace(/[\[\]]/g, '_')) : '';
-                  if (editorId) {
-            $('#' + editorId).hide();
-          }
-                  row.find('.cke').hide();
+                  row.find('.description-field').hide().prop('required', false);
+                  row.find('.rate').prop('readonly', false);
               } else {
-                  // Description mode
                   row.find('.category-select').hide().prop('required', false);
                   row.find('.product-select').hide().prop('required', false);
-                  descField.show().prop('required', true);
-                  if (fieldName && !CKEDITOR.instances[fieldName]) {
-                      try {
-                          const editor = CKEDITOR.replace(fieldName, {
-                              height: 150,
-                              toolbar: [
-                                  {name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike']},
-                                  {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent']},
-                                  {name: 'links', items: ['Link', 'Unlink']},
-                                  {name: 'insert', items: ['Table', 'HorizontalRule']},
-                                  {name: 'styles', items: ['Format']},
-                                  {name: 'colors', items: ['TextColor', 'BGColor']},
-                                  {name: 'tools', items: ['Maximize']}
-                              ],
-                              removePlugins: 'elementspath',
-                              resize_enabled: false
-                          });
-                          editor.on('change', function () {
-                editor.updateElement();
-                calculateTotal();
-              });
-                          editorInstances[fieldName] = editor;
-                      } catch (e) { /* noop */
-            }
-                  }
+                  row.find('.description-field').show().prop('required', true);
+                  row.find('.rate').prop('readonly', false);
               }
           });
       }
@@ -384,60 +347,25 @@
       $(document).on('change', '.use-dropdown-checkbox', function () {
           const row = $(this).closest('tr');
           const isChecked = $(this).is(':checked');
-          const hiddenField = row.find('input[type="hidden"][name*="use_dropdown"]');
+          const hiddenField = row.find('.use-dropdown-hidden');
           const descField = row.find('.description-field');
-          const fieldName = descField.attr('name');
-
-          console.log('Edit checkbox changed:', isChecked, 'Field:', fieldName);
 
           if (isChecked) {
               // Destroy CKEditor instance for this field
-              // Try to destroy by field name first
+              const fieldName = descField.attr('name');
               if (fieldName && CKEDITOR.instances[fieldName]) {
-                  try {
-                      CKEDITOR.instances[fieldName].destroy();
-                      delete editorInstances[fieldName];
-                      console.log('Edit destroyed CKEditor by name:', fieldName);
-                  } catch (e) {
-                      console.log('Edit error destroying CKEditor by name:', e);
-                  }
+                  CKEDITOR.instances[fieldName].destroy();
+                  delete editorInstances[fieldName];
               }
-
-              // Also try to destroy by ID if it exists
-              const textareaId = descField.attr('id');
-              if (textareaId && CKEDITOR.instances[textareaId]) {
-                  try {
-                      CKEDITOR.instances[textareaId].destroy();
-                      delete editorInstances[textareaId];
-                      console.log('Edit destroyed CKEditor by ID:', textareaId);
-                  } catch (e) {
-                      console.log('Edit error destroying CKEditor by ID:', e);
-                  }
-              }
-
-              // Also hide CKEditor container if it exists
-              const fn1 = descField.attr('name');
-              if (fn1) {
-                  const editorId = 'cke_' + fn1.replace(/[\[\]]/g, '_');
-                  $('#' + editorId).hide();
-                  console.log('Edit hidden editor container:', editorId);
-              }
-
-              // Hide by textarea ID as well
-              if (textareaId) {
-                  const ckeIdByTextarea = 'cke_' + textareaId;
-                  $('#' + ckeIdByTextarea).hide();
-                  console.log('Edit hidden editor container by textarea ID:', ckeIdByTextarea);
-              }
-
-              // Hide any stray CKEditor containers in this row
-              row.find('.cke').hide();
 
               // Show dropdowns, hide description
               row.find('.category-select').show().prop('required', true);
               row.find('.product-select').show().prop('required', true);
-              // Show the original textarea and hide CKEditor containers
-              descField.show().prop('required', false).hide(); // Show then hide to remove validation styling
+              descField.hide().prop('required', false);
+              
+              // Also hide CKEditor container if it exists
+              const editorId = 'cke_' + fieldName.replace(/[\[\]]/g, '_');
+              $('#' + editorId).hide();
 
               // Clear description and set hidden field value
               descField.val('');
@@ -456,43 +384,10 @@
 
               // Initialize CKEditor for this specific field
               setTimeout(function () {
-                  // Ensure textarea is visible and has proper ID
-                  descField.show();
-
-                  // Always create a unique ID for CKEditor
-                  const textareaId = 'desc_edit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                  descField.attr('id', textareaId);
-                  console.log('Edit added ID to textarea:', textareaId);
-
-                  // Force destroy any existing instance first (by ID)
-                  if (textareaId && CKEDITOR.instances[textareaId]) {
+                  const fieldName = descField.attr('name');
+                  if (fieldName && !CKEDITOR.instances[fieldName]) {
                       try {
-                          CKEDITOR.instances[textareaId].destroy();
-                          delete editorInstances[textareaId];
-                          console.log('Edit force destroyed existing CKEditor by ID:', textareaId);
-                      } catch (e) {
-                          console.log('Edit error force destroying by ID:', e);
-                      }
-                  }
-
-                  // Also destroy by field name if exists
-                  if (fieldName && CKEDITOR.instances[fieldName]) {
-                      try {
-                          CKEDITOR.instances[fieldName].destroy();
-                          delete editorInstances[fieldName];
-                          console.log('Edit force destroyed existing CKEditor by name:', fieldName);
-                      } catch (e) {
-                          console.log('Edit error force destroying by name:', e);
-                      }
-                  }
-
-                  // Hide the original textarea before CKEditor replacement
-                  descField.hide();
-
-                  // Create new CKEditor instance using ID
-                  if (textareaId && !CKEDITOR.instances[textareaId]) {
-                      try {
-                          const editor = CKEDITOR.replace(textareaId, {
+                          const editor = CKEDITOR.replace(fieldName, {
                               height: 150,
                               toolbar: [
                                   {name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike']},
@@ -507,31 +402,26 @@
                               resize_enabled: false
                           });
 
-                          editor.on('instanceReady', function () {
-                              console.log('Edit CKEditor instance ready:', textareaId);
-                              // Ensure the editor container is visible
-                              const editorContainer = $('#' + textareaId).parent();
-                              editorContainer.find('.cke').show();
-                          });
-
-                          editor.on('change', function () {
-                              editor.updateElement();
-                              calculateTotal();
-                          });
-
-                          editorInstances[textareaId] = editor;
-                          console.log('Edit created new CKEditor instance:', textareaId);
+                          if (editor) {
+                              editor.on('change', function () {
+                                  editor.updateElement();
+                                  calculateTotal();
+                              });
+                              editorInstances[fieldName] = editor;
+                              
+                              // Show CKEditor container
+                              const editorId = 'cke_' + fieldName.replace(/[\[\]]/g, '_');
+                              $('#' + editorId).show();
+                          }
                       } catch (e) {
-                          console.error('Edit error creating CKEditor:', e);
-                          // Fallback: show plain textarea
-                          descField.show();
+                          console.error('CKEditor init error:', e);
                       }
-                  } else {
-                      console.log('Edit CKEditor already exists or missing ID:', textareaId);
-                      // Fallback: show plain textarea
-                      descField.show();
+                  } else if (fieldName && CKEDITOR.instances[fieldName]) {
+                      // If editor already exists, just show it
+                      const editorId = 'cke_' + fieldName.replace(/[\[\]]/g, '_');
+                      $('#' + editorId).show();
                   }
-              }, 300); // Increased timeout further
+              }, 100);
           }
       });
 
@@ -539,56 +429,47 @@
       $('#addRow').click(function () {
           const index = $('#itemsTable tbody tr').length;
           const rowHtml = $('#itemsTable tbody tr:first').clone();
-
-          // IMPORTANT: Remove any CKEditor containers that were cloned
+          
+          // Remove any CKEditor containers that might have been cloned
           rowHtml.find('.cke').remove();
-
+          
           rowHtml.find('input, select, textarea').each(function () {
               const name = $(this).attr('name');
               if (name) {
                   const newName = name.replace(/\d+/, index);
                   $(this).attr('name', newName);
-
-                  // Add proper ID to description textarea for CKEditor
+                  
+                  // Remove ID from description textarea to prevent CKEditor conflicts
                   if ($(this).hasClass('description-field')) {
-                      $(this).attr('id', 'desc_edit_add_' + index + '_' + Date.now());
+                      $(this).removeAttr('id');
                   }
 
-                  // Reset values for new row
+                  // Reset values
                   if ($(this).is('input[type="checkbox"]')) {
-                      $(this).prop('checked', true); // default: dropdown mode CHECKED
-                  } else if ($(this).is('input[type="hidden"]') && name.includes('use_dropdown')) {
-                      $(this).val('1'); // sync hidden to dropdown mode (1 = checked)
+                      $(this).prop('checked', true); // default to dropdown mode
+                  } else if ($(this).is('input[type="hidden"]') && $(this).hasClass('use-dropdown-hidden')) {
+                      $(this).val('1'); // sync hidden to dropdown mode
                   } else if ($(this).hasClass('qty')) {
                       $(this).val('1');
                   } else if ($(this).hasClass('discount')) {
                       $(this).val('0');
-                  } else if ($(this).hasClass('rate')) {
-                      $(this).val('');
                   } else {
                       $(this).val('');
                   }
               }
           });
 
-          // Ensure proper visibility for new row (DROPDOWN MODE by default)
-          // Show dropdowns, hide description
+          // Ensure proper visibility and requirements for new row
           rowHtml.find('.category-select').show().prop('required', true).val('');
           rowHtml.find('.product-select').show().prop('required', true).val('');
           rowHtml.find('.description-field').hide().prop('required', false).val('');
-          rowHtml.find('.rate').prop('readonly', false).val('');
+          rowHtml.find('.rate').prop('readonly', false);
 
-          // Make sure hidden use_dropdown field exists and is set to 1 (checked)
-          const hidden = rowHtml.find('input[type="hidden"][name*="use_dropdown"]');
-          if (hidden.length === 0) {
-              // Add hidden field if it doesn't exist
-              rowHtml.find('td:first').append('<input type="hidden" name="items[' + index + '][use_dropdown]" value="1">');
-          } else {
-              hidden.val('1'); // Ensure it's set to 1 (checked)
-          }
+          // Ensure the hidden field has the correct class and value
+          rowHtml.find('input[type="hidden"][name*="use_dropdown"]').addClass('use-dropdown-hidden').val('1');
 
-          // Ensure checkbox is checked
-          rowHtml.find('.use-dropdown-checkbox').prop('checked', true);
+          // Make sure the visible checkbox shows as checked and fire change to sync UI logic
+          rowHtml.find('.use-dropdown-checkbox').prop('checked', true).trigger('change');
 
           $('#itemsTable tbody').append(rowHtml);
           calculateTotal();

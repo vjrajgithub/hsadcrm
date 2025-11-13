@@ -97,7 +97,7 @@
             </div>
             <div class="title-box">
                 <h1>Quotation</h1>
-                <p><strong>Date:</strong> <?= date('d-m-Y', strtotime($quotation->created_at)) ?></p>
+                <p><strong>Date:</strong> <?= isset($quotation->created_at) ? date('d-m-Y', strtotime($quotation->created_at)) : date('d-m-Y') ?></p>
                 <p><strong>Quotation No:</strong> QT-<?= str_pad($quotation->id, 5, '0', STR_PAD_LEFT) ?></p>
             </div>
         </div>
@@ -137,17 +137,32 @@
                 <?php
                 $grand_total = 0;
                 foreach ($quotation->items as $index => $item):
-                  $grand_total += $item->amount;
+                  $qty = isset($item->qty) ? (float)$item->qty : 0;
+                  $rate = isset($item->rate) ? (float)$item->rate : 0;
+                  $discount = isset($item->discount) ? (float)$item->discount : 0;
+                  $computed_amount = ($qty * $rate);
+                  if ($discount > 0) { $computed_amount -= ($computed_amount * $discount / 100); }
+                  $line_amount = isset($item->amount) && $item->amount !== null && $item->amount !== '' ? (float)$item->amount : $computed_amount;
+                  $grand_total += $line_amount;
                   ?>
                   <tr>
                       <td><?= $index + 1 ?></td>
                       <td><?= $item->category_name ?></td>
-                      <td><?= $item->product_name ?></td>
+                      <td><?php
+                        $parts = [];
+                        $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                        $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                        if ($category_name !== '') { $parts[] = $category_name; }
+                        if (!empty($item->description)) { $parts[] = trim($item->description); }
+                        if ($product_name !== '') { $parts[] = $product_name; }
+                        $combined = implode(', ', $parts);
+                        echo htmlspecialchars($combined !== '' ? $combined : 'Product / Service');
+                      ?></td>
                       <td><?= $item->qty ?></td>
-                      <td><?= number_format($item->rate, 2) ?></td>
-                      <td><?= number_format($item->discount, 2) ?></td>
-                      <td><?= number_format($item->gst, 2) ?></td>
-                      <td><?= number_format($item->amount, 2) ?></td>
+                      <td><?= number_format($rate, 2) ?></td>
+                      <td><?= number_format($discount, 2) ?></td>
+                      <td><?= number_format($item->gst ?? 0, 2) ?></td>
+                      <td><?= number_format($line_amount, 2) ?></td>
                   </tr>
                 <?php endforeach; ?>
                 <tr>

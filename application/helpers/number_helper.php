@@ -7,13 +7,11 @@
 
 if (!function_exists('convert_number_to_words')) {
 
-  function convert_number_to_words($number) {
-    $hyphen = '-';
-    $conjunction = ' and ';
-    $separator = ', ';
+  // Indian Numbering System: Crore, Lakh, Thousand, Hundred
+  // Accepts an optional second parameter to avoid warnings when called with extra args.
+  function convert_number_to_words($number, $precision_ignored = null) {
     $negative = 'negative ';
-    $decimal = ' point ';
-    $dictionary = array(
+    $dictionary = [
         0 => 'zero',
         1 => 'one',
         2 => 'two',
@@ -42,71 +40,86 @@ if (!function_exists('convert_number_to_words')) {
         70 => 'seventy',
         80 => 'eighty',
         90 => 'ninety',
-        100 => 'hundred',
-        1000 => 'thousand',
-        1000000 => 'million',
-        1000000000 => 'billion',
-        1000000000000 => 'trillion',
-        1000000000000000 => 'quadrillion',
-        1000000000000000000 => 'quintillion'
-    );
+    ];
 
     if (!is_numeric($number)) {
       return false;
     }
 
+    // Handle negative numbers
     if ($number < 0) {
       return $negative . convert_number_to_words(abs($number));
     }
 
-    $string = $fraction = null;
-
-    if (strpos($number, '.') !== false) {
-      list($number, $fraction) = explode('.', $number);
-    }
-
-    switch (true) {
-      case $number < 21:
-        $string = $dictionary[$number];
-        break;
-      case $number < 100:
-        $tens = ((int) ($number / 10)) * 10;
-        $units = $number % 10;
-        $string = $dictionary[$tens];
-        if ($units) {
-          $string .= $hyphen . $dictionary[$units];
-        }
-        break;
-      case $number < 1000:
-        $hundreds = (int) ($number / 100);
-        $remainder = $number % 100;
-        $string = $dictionary[$hundreds] . ' ' . $dictionary[100];
-        if ($remainder) {
-          $string .= $conjunction . convert_number_to_words($remainder);
-        }
-        break;
-      default:
-        $baseUnit = pow(1000, floor(log($number, 1000)));
-        $numBaseUnits = (int) ($number / $baseUnit);
-        $remainder = $number % $baseUnit;
-        $string = convert_number_to_words($numBaseUnits) . ' ' . $dictionary[$baseUnit];
-        if ($remainder) {
-          $string .= $remainder < 100 ? $conjunction : $separator;
-          $string .= convert_number_to_words($remainder);
-        }
-        break;
-    }
-
-    if (null !== $fraction && is_numeric($fraction)) {
-      $string .= $decimal;
-      $words = array();
-      foreach (str_split((string) $fraction) as $number) {
-        $words[] = $dictionary[$number];
+    // Support decimals (paise) consistently for numeric inputs
+    $fraction = null;
+    $intPart = $number;
+    if (is_numeric($number)) {
+      // Normalize to string with 2 decimals to capture paise if present
+      $normalized = number_format((float)$number, 2, '.', '');
+      if (strpos($normalized, '.') !== false) {
+        list($intPart, $fraction) = explode('.', $normalized, 2);
+      } else {
+        $intPart = $normalized;
       }
-      $string .= implode(' ', $words);
+    } elseif (is_string($number) && strpos($number, '.') !== false) {
+      list($intPart, $fraction) = explode('.', $number, 2);
     }
 
-    return $string;
+    // Work with integer part only for words
+    $number = (int) $intPart;
+
+    if ($number === 0) {
+      $words = $dictionary[0];
+    } else {
+      $words = '';
+
+      $crore = (int) floor($number / 10000000);
+      $number %= 10000000;
+      $lakh = (int) floor($number / 100000);
+      $number %= 100000;
+      $thousand = (int) floor($number / 1000);
+      $number %= 1000;
+      $hundred = (int) floor($number / 100);
+      $remainder = $number % 100;
+
+      $parts = [];
+      if ($crore) {
+        $parts[] = convert_number_to_words($crore) . ' crore';
+      }
+      if ($lakh) {
+        $parts[] = convert_number_to_words($lakh) . ' lakh';
+      }
+      if ($thousand) {
+        $parts[] = convert_number_to_words($thousand) . ' thousand';
+      }
+      if ($hundred) {
+        $parts[] = convert_number_to_words($hundred) . ' hundred';
+      }
+      if ($remainder) {
+        // Two-digit handling without hyphen
+        if ($remainder < 20) {
+          $parts[] = $dictionary[$remainder];
+        } else {
+          $tens = ((int) ($remainder / 10)) * 10;
+          $units = $remainder % 10;
+          $tens_word = $dictionary[$tens];
+          $parts[] = $units ? ($tens_word . ' ' . $dictionary[$units]) : $tens_word;
+        }
+      }
+
+      $words = trim(implode(' ', $parts));
+    }
+
+    // If there is a fraction (paise), append in words as well (optional)
+    if ($fraction !== null && is_numeric($fraction)) {
+      $fraction = substr(str_pad($fraction, 2, '0'), 0, 2); // ensure 2 digits
+      if ($fraction !== '' && (int)$fraction > 0) {
+        $words .= ' and ' . convert_number_to_words((int)$fraction) . ' paise';
+      }
+    }
+
+    return $words;
   }
 
   if (!function_exists('format_inr')) {

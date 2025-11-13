@@ -1,3 +1,6 @@
+<!-- CKEditor 4 CDN (Free Version) -->
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+
 <div class="content-wrapper">
     <section class="content-header d-flex justify-content-between align-items-center">
         <h1><i class="fa fa-edit"></i> Edit Quotation <small class="text-muted">#<?= $quotation->id ?></small></h1>
@@ -145,40 +148,50 @@
                             <table class="table table-bordered table-hover" id="itemsTable">
                                 <thead class="bg-light">
                                     <tr>
-                                        <th width="20%">Category <span class="text-danger">*</span></th>
-                                        <th width="25%">Product/Service <span class="text-danger">*</span></th>
-                                        <th width="10%">Qty <span class="text-danger">*</span></th>
-                                        <th width="15%">Rate</th>
-                                        <th width="10%">Discount (%)</th>
-                                        <th width="10%">Amount</th>
-                                        <th width="10%">
+                                        <th style="width: 80px;">Use Dropdown</th>
+                                        <th style="width: 250px;">Category/Description <span class="text-danger">*</span></th>
+                                        <th style="width: 200px;">Product/Service <span class="text-danger">*</span></th>
+                                        <th style="width: 80px;">Qty <span class="text-danger">*</span></th>
+                                        <th style="width: 100px;">Rate</th>
+                                        <th style="width: 100px;">Discount (%)</th>
+                                        <th style="width: 100px;">Amount</th>
+                                        <th style="width: 60px;">
                                             <button type="button" class="btn btn-success btn-sm" id="addItemRow">
-                                                <i class="fa fa-plus"></i> Add
+                                                <i class="fa fa-plus"></i>
                                             </button>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($items as $i => $item): ?>
+                                      <?php 
+                                        $use_dropdown = isset($item->use_dropdown) ? (int)$item->use_dropdown : 1;
+                                        $description = isset($item->description) ? $item->description : '';
+                                      ?>
                                       <tr>
+                                          <td style="text-align: center; vertical-align: middle;">
+                                              <input type="checkbox" class="form-check-input use-dropdown-checkbox" <?= $use_dropdown ? 'checked' : '' ?> style="width: 20px; height: 20px; cursor: pointer;">
+                                              <input type="hidden" name="items[<?= $i ?>][use_dropdown]" value="<?= $use_dropdown ?>" class="use-dropdown-hidden">
+                                          </td>
                                           <td>
-                                              <select name="items[<?= $i ?>][category_id]" class="form-control category-select" required>
+                                              <select name="items[<?= $i ?>][category_id]" class="form-control category-select" <?= $use_dropdown ? 'required' : '' ?> style="<?= $use_dropdown ? '' : 'display:none;' ?>">
                                                   <option value="">Select Category</option>
                                                   <?php foreach ($product_categories as $cat): ?>
                                                     <option value="<?= $cat->id ?>" <?= $cat->id == $item->category_id ? 'selected' : '' ?>><?= $cat->name ?></option>
                                                   <?php endforeach; ?>
                                               </select>
+                                              <textarea name="items[<?= $i ?>][description]" class="form-control description-field ckeditor-field" id="desc_edit_<?= $i ?>" placeholder="Enter description..." style="<?= $use_dropdown ? 'display:none;' : '' ?>" rows="5" <?= !$use_dropdown ? 'required' : '' ?>><?= htmlspecialchars($description) ?></textarea>
                                           </td>
                                           <td>
-                                              <select name="items[<?= $i ?>][product_id]" class="form-control product-select" required>
+                                              <select name="items[<?= $i ?>][product_id]" class="form-control product-select" <?= $use_dropdown ? 'required' : '' ?> style="<?= $use_dropdown ? '' : 'display:none;' ?>">
                                                   <option value="<?= $item->product_id ?>"><?= $item->product_name ?></option>
                                               </select>
                                           </td>
                                           <td><input type="number" name="items[<?= $i ?>][qty]" class="form-control qty" value="<?= $item->qty ?>" min="1" required></td>
-                                          <td><input type="text" name="items[<?= $i ?>][rate]" class="form-control rate" value="<?= $item->rate ?>" readonly></td>
-                                          <td><input type="number" name="items[<?= $i ?>][discount]" class="form-control discount" value="<?= $item->discount ?>" min="0" max="100"></td>
+                                          <td><input type="number" name="items[<?= $i ?>][rate]" class="form-control rate" value="<?= $item->rate ?>" step="0.01" <?= $use_dropdown ? 'readonly' : '' ?>></td>
+                                          <td><input type="number" name="items[<?= $i ?>][discount]" class="form-control discount" value="<?= $item->discount ?>" min="0" max="100" step="0.01"></td>
                                           <td><input type="text" class="form-control amount" readonly></td>
-                                          <td><button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button></td>
+                                          <td style="text-align: center;"><button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button></td>
                                       </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -292,11 +305,50 @@ $(document).ready(function () {
         calculateTotal();
     });
 
+    // Handle rate input for description mode
+    $(document).on('input', '.rate', function () {
+        calculateTotal();
+    });
+
+    // Handle checkbox toggle for dropdown/description
+    $(document).on('change', '.use-dropdown-checkbox', function () {
+        const row = $(this).closest('tr');
+        const isChecked = $(this).is(':checked');
+        const hiddenField = row.find('.use-dropdown-hidden');
+
+        if (isChecked) {
+            // Show dropdowns, hide description
+            row.find('.category-select').show().prop('required', true);
+            row.find('.product-select').show().prop('required', true);
+            row.find('.description-field').hide().prop('required', false);
+            row.find('.rate').prop('readonly', true);
+            
+            // Clear description and set hidden field value
+            row.find('.description-field').val('');
+            hiddenField.val('1');
+        } else {
+            // Hide dropdowns, show description
+            row.find('.category-select').hide().prop('required', false);
+            row.find('.product-select').hide().prop('required', false);
+            row.find('.description-field').show().prop('required', true);
+            row.find('.rate').prop('readonly', false);
+            
+            // Clear dropdown selections and set hidden field value
+            row.find('.category-select').val('');
+            row.find('.product-select').val('');
+            hiddenField.val('0');
+        }
+    });
+
     // Add new item row
     $('#addItemRow').click(function () {
         const index = $('#itemsTable tbody tr').length;
         const rowHtml = `
             <tr>
+                <td style="text-align: center; vertical-align: middle;">
+                    <input type="checkbox" class="form-check-input use-dropdown-checkbox" checked style="width: 20px; height: 20px; cursor: pointer;">
+                    <input type="hidden" name="items[${index}][use_dropdown]" value="1" class="use-dropdown-hidden">
+                </td>
                 <td>
                     <select name="items[${index}][category_id]" class="form-control category-select" required>
                         <option value="">Select Category</option>
@@ -304,17 +356,18 @@ $(document).ready(function () {
                           <option value="<?= $cat->id ?>"><?= $cat->name ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <textarea name="items[${index}][description]" class="form-control description-field ckeditor-field" placeholder="Enter description..." style="display:none;" rows="5"></textarea>
                 </td>
                 <td>
                     <select name="items[${index}][product_id]" class="form-control product-select" required>
                         <option value="">Select Product</option>
                     </select>
                 </td>
-                <td><input type="number" name="items[${index}][qty]" class="form-control qty" min="1" required></td>
-                <td><input type="text" name="items[${index}][rate]" class="form-control rate" readonly></td>
-                <td><input type="number" name="items[${index}][discount]" class="form-control discount" value="0" min="0" max="100"></td>
+                <td><input type="number" name="items[${index}][qty]" class="form-control qty" value="1" min="1" required></td>
+                <td><input type="number" name="items[${index}][rate]" class="form-control rate" step="0.01" readonly></td>
+                <td><input type="number" name="items[${index}][discount]" class="form-control discount" value="0" min="0" max="100" step="0.01"></td>
                 <td><input type="text" class="form-control amount" readonly></td>
-                <td><button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button></td>
+                <td style="text-align: center;"><button type="button" class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button></td>
             </tr>`;
         $('#itemsTable tbody').append(rowHtml);
         rowIndex++;
@@ -439,18 +492,30 @@ $(document).ready(function () {
             // Validate items
             let hasItems = false;
             $('#itemsTable tbody tr').each(function() {
-                const categoryId = $(this).find('.category-select').val();
-                const productId = $(this).find('.product-select').val();
+                const useDropdown = $(this).find('.use-dropdown-checkbox').is(':checked');
                 const qty = $(this).find('.qty').val();
+                const rate = $(this).find('.rate').val();
                 
-                if (categoryId && productId && qty) {
-                    hasItems = true;
-                    return false; // break loop
+                if (useDropdown) {
+                    const categoryId = $(this).find('.category-select').val();
+                    const productId = $(this).find('.product-select').val();
+                    
+                    if (categoryId && productId && qty && rate) {
+                        hasItems = true;
+                        return false; // break loop
+                    }
+                } else {
+                    const description = $(this).find('.description-field').val().trim();
+                    
+                    if (description && qty && rate) {
+                        hasItems = true;
+                        return false; // break loop
+                    }
                 }
             });
             
             if (!hasItems) {
-                Swal.fire('Validation Error', 'Please add at least one item with category, product, and quantity', 'error');
+                Swal.fire('Validation Error', 'Please add at least one complete item with quantity and rate', 'error');
                 return false;
             }
             
@@ -497,6 +562,117 @@ $(document).ready(function () {
                     });
                 }
             });
+        }
+    });
+
+    // CKEditor instances tracker
+    var editorInstances = {};
+
+    // Initialize CKEditor for existing description fields that are visible
+    setTimeout(function() {
+        $('.description-field:visible').each(function() {
+            const fieldName = $(this).attr('name');
+            if (fieldName && !CKEDITOR.instances[fieldName]) {
+                const editor = CKEDITOR.replace(fieldName, {
+                    height: 150,
+                    toolbar: [
+                        { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+                        { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'] },
+                        { name: 'links', items: ['Link', 'Unlink'] },
+                        { name: 'insert', items: ['Table', 'HorizontalRule'] },
+                        { name: 'styles', items: ['Format'] },
+                        { name: 'colors', items: ['TextColor', 'BGColor'] },
+                        { name: 'tools', items: ['Maximize'] }
+                    ],
+                    removePlugins: 'elementspath',
+                    resize_enabled: false
+                });
+                
+                editor.on('change', function() {
+                    editor.updateElement();
+                    calculateTotal();
+                });
+                
+                editorInstances[fieldName] = editor;
+            }
+        });
+    }, 500);
+
+    // Handle checkbox toggle with CKEditor for edit form
+    $(document).off('change', '.use-dropdown-checkbox');
+    
+    $(document).on('change', '.use-dropdown-checkbox', function () {
+        const row = $(this).closest('tr');
+        const isChecked = $(this).is(':checked');
+        const hiddenField = row.find('.use-dropdown-hidden');
+        const descField = row.find('.description-field');
+
+        if (isChecked) {
+            // Destroy CKEditor instance for this field
+            const fieldName = descField.attr('name');
+            if (fieldName && CKEDITOR.instances[fieldName]) {
+                CKEDITOR.instances[fieldName].destroy();
+                delete editorInstances[fieldName];
+            }
+            
+            // Show dropdowns, hide description
+            row.find('.category-select').show().prop('required', true);
+            row.find('.product-select').show().prop('required', true);
+            descField.hide().prop('required', false);
+            row.find('.rate').prop('readonly', true);
+            
+            // Clear description and set hidden field value
+            descField.val('');
+            hiddenField.val('1');
+        } else {
+            // Hide dropdowns, show description
+            row.find('.category-select').hide().prop('required', false);
+            row.find('.product-select').hide().prop('required', false);
+            descField.show().prop('required', true);
+            row.find('.rate').prop('readonly', false);
+            
+            // Clear dropdown selections and set hidden field value
+            row.find('.category-select').val('');
+            row.find('.product-select').val('');
+            hiddenField.val('0');
+            
+            // Initialize CKEditor for this specific field
+            setTimeout(function() {
+                if (!descField.attr('id')) {
+                    descField.attr('id', 'desc_' + Date.now());
+                }
+                const fieldName = descField.attr('name');
+                if (fieldName && !CKEDITOR.instances[fieldName]) {
+                    const editor = CKEDITOR.replace(fieldName, {
+                        height: 150,
+                        toolbar: [
+                            { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+                            { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'] },
+                            { name: 'links', items: ['Link', 'Unlink'] },
+                            { name: 'insert', items: ['Table', 'HorizontalRule'] },
+                            { name: 'styles', items: ['Format'] },
+                            { name: 'colors', items: ['TextColor', 'BGColor'] },
+                            { name: 'tools', items: ['Maximize'] }
+                        ],
+                        removePlugins: 'elementspath',
+                        resize_enabled: false
+                    });
+                    
+                    editor.on('change', function() {
+                        editor.updateElement();
+                        calculateTotal();
+                    });
+                    
+                    editorInstances[fieldName] = editor;
+                }
+            }, 100);
+        }
+    });
+
+    // Update CKEditor data before form submission
+    $('#quotationEditForm').on('submit', function() {
+        for (var instance in CKEDITOR.instances) {
+            CKEDITOR.instances[instance].updateElement();
         }
     });
 

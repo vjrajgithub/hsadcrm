@@ -109,14 +109,35 @@ class Quotation extends MY_Auth_Controller {
       return;
     }
 
-    // Items validation
-    $items = $this->input->post('items');
+    // Items validation and preparation
+    $items = $this->_prepare_items();
     if (empty($items)) {
       echo json_encode([
           'status' => false,
           'message' => 'Please add at least one item.'
       ]);
       return;
+    }
+    
+    // Validate each item based on use_dropdown setting
+    foreach ($items as $item) {
+      if ($item['use_dropdown']) {
+        if (empty($item['category_id']) || empty($item['product_id'])) {
+          echo json_encode([
+              'status' => false,
+              'message' => 'Please select category and product for dropdown items.'
+          ]);
+          return;
+        }
+      } else {
+        if (empty($item['description'])) {
+          echo json_encode([
+              'status' => false,
+              'message' => 'Please provide description for custom items.'
+          ]);
+          return;
+        }
+      }
     }
 
     // File upload (optional)
@@ -142,14 +163,7 @@ class Quotation extends MY_Auth_Controller {
     // Calculate total amount (sum of item amounts)
     $total = 0;
     foreach ($items as $item) {
-      $qty = (int) $item['qty'];
-      $rate = (float) $item['rate'];
-      $discount = (float) $item['discount'];
-      $amount = $qty * $rate;
-      if ($discount > 0) {
-        $amount -= ($amount * $discount / 100);
-      }
-      $total += $amount;
+      $total += $item['amount'];
     }
 
     // GST Calculation
@@ -191,10 +205,10 @@ class Quotation extends MY_Auth_Controller {
         'created_at' => date('Y-m-d H:i:s')
     ];
 
-    $this->db->insert('quotations', $data);
-    $quotation_id = $this->db->insert_id();
+    // Use model's insert method to capture snapshots
+    $quotation_id = $this->Quotation_model->insert($data);
 
-    // Insert items
+    // Insert items with snapshot capture
     $this->Quotation_model->insert_items($quotation_id, $items);
 
     // Success response
@@ -284,26 +298,104 @@ class Quotation extends MY_Auth_Controller {
   }
 
   /**
-   * Update Quotation
+   * Update Quotation - Enhanced for checkbox functionality
    */
   public function update($id) {
-    $this->_validate_form();
+    // Enhanced validation rules matching frontend validation
+    $this->form_validation->set_rules('company_id', 'Company', 'required');
+    $this->form_validation->set_rules('client_id', 'Client', 'required');
+    $this->form_validation->set_rules('bank_id', 'Bank', 'required');
+    $this->form_validation->set_rules('contact_person', 'Contact Person', 'required|min_length[2]|max_length[100]');
+    $this->form_validation->set_rules('department', 'Department', 'required|min_length[2]|max_length[100]');
+    $this->form_validation->set_rules('state', 'Place of Supply', 'required');
+    $this->form_validation->set_rules('mode_id', 'Mode', 'required');
+    $this->form_validation->set_rules('hsn_sac', 'HSN/SAC Code', 'max_length[20]|alpha_numeric');
+    $this->form_validation->set_rules('job_no', 'Job No', 'trim|max_length[128]');
+    $this->form_validation->set_rules('terms', 'Terms & Conditions', 'max_length[1000]');
+    $this->form_validation->set_rules('notes', 'Notes', 'max_length[1000]');
+
+    if ($this->form_validation->run() == false) {
+      echo json_encode([
+          'status' => false,
+          'message' => strip_tags(validation_errors())
+      ]);
+      return;
+    }
+
+    // Items validation and preparation
+    $items = $this->_prepare_items();
+    if (empty($items)) {
+      echo json_encode([
+          'status' => false,
+          'message' => 'Please add at least one item.'
+      ]);
+      return;
+    }
+    
+    // Validate each item based on use_dropdown setting
+    foreach ($items as $item) {
+      if ($item['use_dropdown']) {
+        if (empty($item['category_id']) || empty($item['product_id'])) {
+          echo json_encode([
+              'status' => false,
+              'message' => 'Please select category and product for dropdown items.'
+          ]);
+          return;
+        }
+      } else {
+        if (empty($item['description'])) {
+          echo json_encode([
+              'status' => false,
+              'message' => 'Please provide description for custom items.'
+          ]);
+          return;
+        }
+      }
+    }
 
     // Handle file upload (if any)
     $attachment = $this->input->post('old_attachment');
     if (!empty($_FILES['attachment']['name'])) {
-      $config['upload_path'] = './assets/uploads/quotations';
+      $config['upload_path'] = './assets/uploads/quotations/';
       $config['allowed_types'] = 'jpg|jpeg|png|pdf|doc|docx';
-      $config['encrypt_name'] = TRUE;
+      $config['encrypt_name'] = true;
 
       $this->load->library('upload', $config);
       if (!$this->upload->do_upload('attachment')) {
-        echo json_encode(['status' => false, 'message' => $this->upload->display_errors()]);
+        echo json_encode([
+            'status' => false,
+            'message' => $this->upload->display_errors()
+        ]);
         return;
       } else {
         $attachment = $this->upload->data('file_name');
       }
     }
+
+    // Calculate total amount (sum of item amounts)
+    $total = 0;
+    foreach ($items as $item) {
+      $total += $item['amount'];
+    }
+
+    // GST Calculation
+    $company_state = $this->Company_model->get_state($this->input->post('company_id'));
+    $place_of_supply = $this->input->post('state');
+
+    $gst_amount = 0;
+    $gst_type = null;
+    if ($company_state && $place_of_supply) {
+      if ($company_state == $place_of_supply) {
+        $gst_type = 'CGST+SGST';
+        $gst_amount = ($total * 18) / 100; // Example: 18% GST
+      } else {
+        $gst_type = 'IGST';
+        $gst_amount = ($total * 18) / 100;
+      }
+    }
+
+    // Final total
+    $grand_total = $total + $gst_amount;
 
     // Master data
     $quotation_data = [
@@ -312,26 +404,26 @@ class Quotation extends MY_Auth_Controller {
         'bank_id' => $this->input->post('bank_id'),
         'contact_person' => $this->input->post('contact_person'),
         'department' => $this->input->post('department'),
-        'state' => $this->input->post('state'),
+        'state' => $place_of_supply,
         'mode_id' => $this->input->post('mode_id'),
         'hsn_sac' => $this->input->post('hsn_sac'),
         'job_no' => $this->input->post('job_no'),
         'terms' => $this->input->post('terms'),
         'notes' => $this->input->post('notes'),
         'attachment' => $attachment,
-        'total_amount' => $this->input->post('grand_total'),
-        'gst_type' => $this->input->post('gst_type'),
-        'gst_amount' => $this->input->post('gst_amount'),
+        'total_amount' => $grand_total,
+        'gst_type' => $gst_type,
+        'gst_amount' => $gst_amount,
         'updated_at' => date('Y-m-d H:i:s')
     ];
-
-    // Items
-    $items = $this->_prepare_items();
 
     // Update DB
     $this->Quotation_model->update_quotation($id, $quotation_data, $items);
 
-    echo json_encode(['status' => true, 'id' => $id]);
+    echo json_encode([
+        'status' => true,
+        'message' => 'Quotation updated successfully!'
+    ]);
   }
 
   /**
@@ -404,7 +496,7 @@ class Quotation extends MY_Auth_Controller {
   }
 
   /**
-   * Prepare items array from POST
+   * Prepare items array from POST - Updated for checkbox functionality
    */
   private function _prepare_items() {
     $items = [];
@@ -413,17 +505,31 @@ class Quotation extends MY_Auth_Controller {
         $qty = (float) $row['qty'];
         $rate = (float) $row['rate'];
         $discount = (float) $row['discount'];
+        $use_dropdown = isset($row['use_dropdown']) ? (int) $row['use_dropdown'] : 1;
+        
         $amount = $qty * $rate;
         $amount -= ($amount * $discount / 100);
 
-        $items[] = [
-            'category_id' => $row['category_id'],
-            'product_id' => $row['product_id'],
+        $item_data = [
+            'use_dropdown' => $use_dropdown,
             'qty' => $qty,
             'rate' => $rate,
             'discount' => $discount,
             'amount' => $amount
         ];
+
+        // Handle dropdown vs description mode
+        if ($use_dropdown) {
+          $item_data['category_id'] = isset($row['category_id']) ? $row['category_id'] : null;
+          $item_data['product_id'] = isset($row['product_id']) ? $row['product_id'] : null;
+          $item_data['description'] = null;
+        } else {
+          $item_data['category_id'] = null;
+          $item_data['product_id'] = null;
+          $item_data['description'] = isset($row['description']) ? trim($row['description']) : '';
+        }
+
+        $items[] = $item_data;
       }
     }
     return $items;

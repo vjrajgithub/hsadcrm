@@ -1,5 +1,7 @@
 <?php
 //echo '<pre>';
+//print_r($items);
+//die;
 //print_r($quotation);
 //die;
 ?>
@@ -47,6 +49,42 @@
             .font-bold {
                 font-weight: bold;
             }
+            /* CKEditor content styling for PDF */
+            p {
+                margin: 5px 0;
+            }
+            ul, ol {
+                margin: 5px 0;
+                padding-left: 20px;
+            }
+            li {
+                margin: 2px 0;
+            }
+            strong, b {
+                font-weight: bold;
+            }
+            em, i {
+                font-style: italic;
+            }
+            u {
+                text-decoration: underline;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                margin: 5px 0;
+                font-weight: bold;
+            }
+            h1 {
+                font-size: 14px;
+            }
+            h2 {
+                font-size: 13px;
+            }
+            h3 {
+                font-size: 12px;
+            }
+            h4, h5, h6 {
+                font-size: 11px;
+            }
         </style>
     </head>
     <body>
@@ -85,7 +123,7 @@
                         PAN NO. <?= $quotation->company_pan ?><br><br>
                     </td>
                     <td style="width:30%;" valign="top">Estimate No.<br><strong><?= isset($estimate_no) ? $estimate_no : ('EST-' . str_pad($quotation->id, 4, '0', STR_PAD_LEFT)) ?></strong></td>
-                    <td style="width:30%;">Date<br><strong><?= date('d-m-y', strtotime($quotation->created_at)) ?></strong></td>
+                    <td style="width:30%;">Date<br><strong><?= isset($quotation->created_at) ? date('d-m-y', strtotime($quotation->created_at)) : date('d-m-y') ?></strong></td>
                 </tr>
                 <tr>
                     <td  valign="top">Job No.<br><strong><?= $quotation->job_no ?? '-' ?></strong></td>
@@ -129,7 +167,7 @@
                     <tr>
                         <th style="width:8%;">Sr.No.</th>
                         <th style="width:40%;">Description of Goods & Services</th>
-                        <th style="width:15%;">HSN/SAC <?= $quotation->hsn_sac ?></th>
+                        <th style="width:15%;">HSN/SAC <?= !empty($quotation->hsn_sac) ? $quotation->hsn_sac : '998314' ?></th>
                         <th style="width:10%;">Qty</th>
                         <th style="width:12%;">Rate</th>
                         <th style="width:15%;">Amount INR</th>
@@ -143,17 +181,49 @@
                     <?php foreach ($items as $item): ?>
                       <tr>
                           <td align="center"><?= $i++ ?></td>
-                          <td valign="top"><?= $item->product_name ?></td>
+                          <td align="left">
+                              <?php
+                              // Convert to integer for proper comparison
+                              $use_dropdown_int = isset($item->use_dropdown) ? (int) $item->use_dropdown : 1;
+                              $description = isset($item->description) ? trim($item->description) : '';
+
+                              if ($use_dropdown_int == 0 && !empty($description)) {
+                                // When use_dropdown is 0, show the HTML description from CKEditor
+                                // Use strip_tags to remove potentially dangerous tags, but keep formatting for PDF
+                                $allowed_tags = '<p><br><strong><b><em><i><u><ul><ol><li><table><tr><td><th><h1><h2><h3><h4><h5><h6><span><div>';
+                                echo strip_tags($description, $allowed_tags);
+                              } else {
+                                // When use_dropdown is 1, show category and product
+                                $parts = [];
+                                $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                                $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                                if ($category_name !== '') {
+                                  $parts[] = $category_name;
+                                }
+                                if ($product_name !== '') {
+                                  $parts[] = $product_name;
+                                }
+                                $combined = implode(', ', $parts);
+                                echo htmlspecialchars($combined !== '' ? $combined : 'Product / Service');
+                              }
+                              ?>
+                          </td>
                           <td align="center"><?= $quotation->hsn_sac ?></td>
-                          <td align="center"><?= $item->qty ?></td>
-                          <td align="right"><?= number_format($item->rate, 2) ?></td>
-                          <td align="right"><?= number_format($item->amount, 2) ?></td>
+                          <?php
+                          $qty = isset($item->qty) ? (float) $item->qty : 0;
+                          $rate = isset($item->rate) ? (float) $item->rate : 0;
+                          $discount = isset($item->discount) ? (float) $item->discount : 0;
+                          $computed_amount = ($qty * $rate);
+                          if ($discount > 0) {
+                            $computed_amount -= ($computed_amount * $discount / 100);
+                          }
+                          $line_amount = isset($item->amount) && $item->amount !== null && $item->amount !== '' ? (float) $item->amount : $computed_amount;
+                          ?>
+                          <td align="center"><?= $qty ?></td>
+                          <td align="right"><?= number_format($rate, 2) ?></td>
+                          <td align="right"><?= number_format($line_amount, 2) ?></td>
                       </tr>
-
-
-
-
-                      <?php $sub_total += $item->amount; ?>
+                      <?php $sub_total += $line_amount; ?>
                     <?php endforeach; ?>
 
 <!--                    <tr>
@@ -174,12 +244,12 @@
                     foreach ($items as $item):
                       $detail_total += $item->amount;
                       ?>
-                                                          <tr>
-                                                              <td align="center"><?= $item->product_name ?></td>
-                                                              <td align="center"><?= $item->qty ?></td>
-                                                              <td align="center"><?= number_format($item->rate, 0) ?></td>
-                                                              <td align="center"><?= number_format($item->amount, 0) ?></td>
-                                                          </tr>
+                                                                            <tr>
+                                                                                <td align="center"><?= $item->product_name ?></td>
+                                                                                <td align="center"><?= $item->qty ?></td>
+                                                                                <td align="center"><?= number_format($item->rate, 0) ?></td>
+                                                                                <td align="center"><?= number_format($item->amount, 0) ?></td>
+                                                                            </tr>
                     <?php endforeach; ?>
                                 </tbody>
                                 <tfoot style=" background: #ccc">
@@ -198,7 +268,7 @@
                         <td></td>
                     </tr>-->
 
-                    <tr><td></td>
+<!--                    <tr><td></td>
                         <td ></td>
                         <td></td>
                         <td></td>
@@ -207,7 +277,7 @@
                     </tr>
                     <tr><td rowspan="3"></td><td colspan="2" rowspan="3"></td><td colspan="3">&nbsp;</td></tr>
                     <tr><td colspan="3" align="center">GST</td></tr>
-                    <tr><td></td><td>Rate</td><td align="center">Amount</td></tr>
+                    <tr><td></td><td>Rate</td><td align="center">Amount</td></tr>-->
                     <?php
                     $is_same_state = ($quotation->company_state == $quotation->client_state);
                     $sub_total = array_sum(array_column($items, 'amount'));
@@ -256,10 +326,10 @@
                             </table>
                         </td>
                     </tr>
-                    <tr><td colspan="2" align="right"><strong>Text Total</strong></td><td align="right"><?= format_inr($gst_total) ?></td></tr>
-                    <tr><td colspan="2" align="right"><strong>Estimate Total</strong></td><td align="right"><strong><?= format_inr($grand_total) ?></strong></td></tr>
+                    <tr><td colspan="2" align="right"><strong>Tax</strong></td><td align="right"><?= format_inr($gst_total) ?></td></tr>
+                    <tr><td colspan="2" align="right"><strong>Estimate</strong></td><td align="right"><strong><?= format_inr($grand_total) ?></strong></td></tr>
                     <tr>
-                        <td colspan="6"><strong><?= ucwords(convert_number_to_words(round($grand_total))) ?> Only</strong></td>
+                        <td colspan="6"><strong><?= ucwords(convert_number_to_words($grand_total)) ?> Only</strong></td>
                     </tr>
                     <tr><td colspan="6">&nbsp;</td></tr>
                 </tbody>
@@ -286,9 +356,9 @@
                         <div style="margin-bottom:10px"><strong>For <?= $quotation->company_name ?></strong></div>
                         <table class="no-border-table" cellpadding="3" cellspacing="0" style="width:100%;">
                             <tr>
-                                <td class="no-border" align="center" valign="bottom" height="30"><div style="width:80px; border-bottom:2px dotted #000;"></div></td>
-                                <td class="no-border" align="center" valign="bottom"><div style="width:80px; border-bottom:2px dotted #000;"></div></td>
-                                <td class="no-border" align="center" valign="bottom"><div style="width:80px; border-bottom:2px dotted #000;"></div></td>
+                                <td class="no-border" align="center" valign="bottom" height="30"><div style="width:80px; "></div></td>
+                                <td class="no-border" align="center" valign="bottom"><div style="width:80px; "></div></td>
+                                <td class="no-border" align="center" valign="bottom"><div style="width:80px; "></div></td>
                             </tr>
                             <tr>
                                 <td class="no-border" align="center" valign="top">Prepared By</td>

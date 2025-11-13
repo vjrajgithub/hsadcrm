@@ -24,9 +24,9 @@
                 <tr>
                     <td width="200">
                         <?php if (!empty($quotation->company_logo)) : ?>
-                          <img src="http://localhost/crm/assets/uploads/logos/1754289061.jpeg" style="width:130px;" alt="Logo">
+                          <img src="<?= isset($logo_src) ? $logo_src : base_url('assets/images/company-logo.png') ?>" style="width:130px;" alt="Logo">
                         <?php else : ?>
-                          <img src="http://localhost/crm/assets/uploads/logos/1754289061.jpeg" style="width:130px;">
+                          <img src="<?= isset($logo_src) ? $logo_src : base_url('assets/images/company-logo.png') ?>" style="width:130px;" alt="Logo">
                         <?php endif; ?>
                     </td>
                     <td align="left" valign="middle"  style="font-size:12px; font-family:Arial, Helvetica, sans-serif;">
@@ -53,7 +53,7 @@
                         PAN NO. <?= $quotation->company_pan ?><br><br>
                     </td>
                     <td width="33%"  valign="top">Estimate No.<br><strong><?= 'EST-' . str_pad($quotation->id, 4, '0', STR_PAD_LEFT) ?></strong></td>
-                    <td>Date<br><strong><?= date('d-m-y', strtotime($quotation->created_at)) ?></strong></td>
+                    <td>Date<br><strong><?= isset($quotation->created_at) ? date('d-m-y', strtotime($quotation->created_at)) : date('d-m-y') ?></strong></td>
                 </tr>
                 <tr>
                     <td  valign="top">Job No.<br><strong><?= $quotation->job_no ?? '-' ?></strong></td>
@@ -96,7 +96,7 @@
                     <tr>
                         <th width="20">Sr.<br>No.</th>
                         <th width="280">Description of Goods & Services</th>
-                        <th width="70">HSN/SAC <?= $quotation->hsn_sac ?></th>
+                        <th width="70">HSN/SAC <?= !empty($quotation->hsn_sac) ? $quotation->hsn_sac : '998314' ?></th>
                         <th width="20">Qty</th>
                         <th width="40">Rate</th>
                         <th width="70">Amount INR</th>
@@ -110,17 +110,34 @@
                     <?php foreach ($items as $item): ?>
                       <tr>
                           <td align="center"><?= $i++ ?></td>
-                          <td valign="top"><?= $item->product_name ?></td>
+                          <td valign="top"><?php
+                            $parts = [];
+                            $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                            $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                            if ($category_name !== '') { $parts[] = $category_name; }
+                            if (!empty($item->description)) { $parts[] = trim($item->description); }
+                            if ($product_name !== '') { $parts[] = $product_name; }
+                            $combined = implode(', ', $parts);
+                            echo htmlspecialchars($combined !== '' ? $combined : 'Product / Service');
+                          ?></td>
                           <td align="center"><?= $quotation->hsn_sac ?></td>
-                          <td align="center"><?= $item->qty ?></td>
-                          <td align="right"><?= number_format($item->rate, 2) ?></td>
-                          <td align="right"><?= number_format($item->amount, 2) ?></td>
+                          <?php
+                            $qty = isset($item->qty) ? (float)$item->qty : 0;
+                            $rate = isset($item->rate) ? (float)$item->rate : 0;
+                            $discount = isset($item->discount) ? (float)$item->discount : 0;
+                            $computed_amount = ($qty * $rate);
+                            if ($discount > 0) { $computed_amount -= ($computed_amount * $discount / 100); }
+                            $line_amount = isset($item->amount) && $item->amount !== null && $item->amount !== '' ? (float)$item->amount : $computed_amount;
+                          ?>
+                          <td align="center"><?= $qty ?></td>
+                          <td align="right"><?= number_format($rate, 2) ?></td>
+                          <td align="right"><?= number_format($line_amount, 2) ?></td>
                       </tr>
                 
 
 
 
-                      <?php $sub_total += $item->amount; ?>
+                      <?php $sub_total += $line_amount; ?>
                     <?php endforeach; ?>
 
       <tr>
@@ -226,7 +243,7 @@
                     <tr><td colspan="2" align="right"><strong>Text Total</strong></td><td align="right"><?= format_inr($gst_total) ?></td></tr>
                     <tr><td colspan="2" align="right"><strong>Estimate Total</strong></td><td align="right"><strong><?= format_inr($grand_total) ?></strong></td></tr>
                     <tr>
-                        <td colspan="6"><strong><?= ucwords(convert_number_to_words(round($grand_total))) ?> Only</strong></td>
+                        <td colspan="6"><strong><?= ucwords(convert_number_to_words($grand_total)) ?> Only</strong></td>
                     </tr>
                     <tr><td colspan="6">&nbsp;</td></tr>
                 </tbody>

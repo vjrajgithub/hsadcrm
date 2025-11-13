@@ -260,7 +260,29 @@
             ?>
             <tr>
                 <td><?php echo $i++; ?></td>
-                <td style="text-align:left;"><?php echo isset($item->product_name) ? $item->product_name : 'Product Name'; ?></td>
+                <td style="text-align:left;">
+                    <?php 
+                    // Convert to integer for proper comparison
+                    $use_dropdown_int = isset($item->use_dropdown) ? (int)$item->use_dropdown : 1;
+                    $description = isset($item->description) ? trim($item->description) : '';
+                    
+                    if ($use_dropdown_int == 0 && !empty($description)) {
+                        // When use_dropdown is 0, show the HTML description from CKEditor
+                        // Use strip_tags to remove potentially dangerous tags, but keep formatting
+                        $allowed_tags = '<p><br><strong><b><em><i><u><ul><ol><li><table><tr><td><th><thead><tbody><h1><h2><h3><h4><h5><h6><a><span><div>';
+                        echo strip_tags($description, $allowed_tags);
+                    } else {
+                        // When use_dropdown is 1, show category and product
+                        $parts = [];
+                        $category_name = isset($item->category_name) ? trim($item->category_name) : '';
+                        $product_name = isset($item->product_name) ? trim($item->product_name) : '';
+                        if ($category_name !== '') { $parts[] = $category_name; }
+                        if ($product_name !== '') { $parts[] = $product_name; }
+                        $combined = implode(', ', $parts);
+                        echo $combined !== '' ? htmlspecialchars($combined) : 'Product / Service';
+                    }
+                    ?>
+                </td>
                 <td><?php echo isset($quotation->hsn_sac) ? $quotation->hsn_sac : '998314'; ?></td>
                 <td><?php echo $qty; ?></td>
                 <td style="text-align:right;">₹<?php echo number_format($rate, 2); ?></td>
